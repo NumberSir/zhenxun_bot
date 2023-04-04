@@ -49,7 +49,7 @@ async def _(event: MessageEvent, cmd: str = OneCommand()):
     if cmd == "查看我的cookie":
         if isinstance(event, GroupMessageEvent):
             await genshin_matcher.finish("请私聊查看您的cookie！")
-        await genshin_matcher.finish("您的cookie为" + user.cookie)
+        await genshin_matcher.finish(f"您的cookie为{user.cookie}")
     if not user.uid or not user.cookie:
         await genshin_matcher.finish("请先绑定user.uid和cookie！")
     # if "account_id" not in await Genshin.get_user_cookie(user.uid, True):
@@ -111,7 +111,7 @@ async def _(event: MessageEvent, cmd: str = OneCommand()):
         else:
             user.auto_sign = False
             user.auto_sign_time = None
-            await genshin_matcher.send(f"已关闭原神自动签到！", at_sender=True)
+            await genshin_matcher.send("已关闭原神自动签到！", at_sender=True)
             logger.info(
                 f"(USER {event.user_id}, GROUP "
                 f"{event.group_id if isinstance(event, GroupMessageEvent) else 'private'})"

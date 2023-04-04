@@ -38,7 +38,7 @@ def get_attr(module: ModuleType, name: str, default: Any = None) -> Any:
 
 def init_plugin_info():
 
-    for matcher in [x for x in get_matchers(True)]:
+    for matcher in list(get_matchers(True)):
         try:
             if (plugin := matcher.plugin) and matcher.plugin_name:
                 metadata = plugin.metadata

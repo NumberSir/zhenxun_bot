@@ -35,7 +35,7 @@ async def _(event: GroupAdminNoticeEvent):
             )
         else:
             logger.warning(
-                f"配置项 MODULE: [<u><y>admin_bot_manage</y></u>] | KEY: [<u><y>ADMIN_DEFAULT_AUTH</y></u>] 为空"
+                "配置项 MODULE: [<u><y>admin_bot_manage</y></u>] | KEY: [<u><y>ADMIN_DEFAULT_AUTH</y></u>] 为空"
             )
     elif event.sub_type == "unset":
         await LevelUser.delete_level(event.user_id, event.group_id)

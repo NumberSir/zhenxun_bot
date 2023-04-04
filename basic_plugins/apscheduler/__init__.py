@@ -56,7 +56,7 @@ cx = on_message(priority=9999, block=False, rule=lambda: False)
 )
 async def _():
     img = image(IMAGE_PATH / "zhenxun" / "zao.jpg")
-    await broadcast_group("[[_task|zwa]]早上好" + img, log_cmd="被动早晚安")
+    await broadcast_group(f"[[_task|zwa]]早上好{img}", log_cmd="被动早晚安")
     logger.info("每日早安发送...")
 
 
@@ -69,7 +69,7 @@ async def _():
 async def _():
     img = image(IMAGE_PATH / "zhenxun" / "sleep.jpg")
     await broadcast_group(
-        f"[[_task|zwa]]{NICKNAME}要睡觉了，你们也要早点睡呀" + img, log_cmd="被动早晚安"
+        f"[[_task|zwa]]{NICKNAME}要睡觉了，你们也要早点睡呀{img}", log_cmd="被动早晚安"
     )
     logger.info("每日晚安发送...")
 
@@ -119,9 +119,9 @@ async def _():
             fl = await bot.get_friend_list()
             for f in fl:
                 await FriendUser.create(user_id=f["user_id"], user_name=f["nickname"])
-                logger.debug(f"更新好友信息成功", "自动更新好友", f["user_id"])
+                logger.debug("更新好友信息成功", "自动更新好友", f["user_id"])
         except Exception as e:
-            logger.error(f"自动更新群组信息错误", e=e)
+            logger.error("自动更新群组信息错误", e=e)
     logger.info("自动更新好友信息成功...")
 
 

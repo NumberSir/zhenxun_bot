@@ -45,9 +45,7 @@ add_uid_pid = on_command(
 @add_keyword.handle()
 async def _(bot: Bot, event: MessageEvent, arg: Message = CommandArg()):
     msg = arg.extract_plain_text().strip()
-    group_id = -1
-    if isinstance(event, GroupMessageEvent):
-        group_id = event.group_id
+    group_id = event.group_id if isinstance(event, GroupMessageEvent) else -1
     if msg:
         # if await PixivKeywordUser.add_keyword(
         #     event.user_id, group_id, msg, bot.config.superusers
@@ -63,13 +61,12 @@ async def _(bot: Bot, event: MessageEvent, arg: Message = CommandArg()):
                 f"已成功添加pixiv搜图关键词：{msg}，请等待管理员通过该关键词！", at_sender=True
             )
             logger.info(
-                f"(USER {event.user_id}, GROUP {event.group_id if isinstance(event, GroupMessageEvent) else 'private'})"
-                f" 添加了pixiv搜图关键词:" + msg
+                f"(USER {event.user_id}, GROUP {event.group_id if isinstance(event, GroupMessageEvent) else 'private'}) 添加了pixiv搜图关键词:{msg}"
             )
         else:
             await add_keyword.finish(f"该关键词 {msg} 已存在...")
     else:
-        await add_keyword.finish(f"虚空关键词？.？.？.？")
+        await add_keyword.finish("虚空关键词？.？.？.？")
 
 
 @add_uid_pid.handle()

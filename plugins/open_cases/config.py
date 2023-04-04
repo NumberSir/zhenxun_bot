@@ -171,9 +171,7 @@ def get_wear(rand: float) -> str:
         return "略有磨损"
     if FIELD_TESTED_S <= rand <= FIELD_TESTED_E:
         return "久经沙场"
-    if WELL_WORN_S <= rand <= WELL_WORN_E:
-        return "破损不堪"
-    return "战痕累累"
+    return "破损不堪" if WELL_WORN_S <= rand <= WELL_WORN_E else "战痕累累"
 
 
 def random_color_and_st(rand: float) -> Tuple[str, bool]:
@@ -186,25 +184,15 @@ def random_color_and_st(rand: float) -> Tuple[str, bool]:
         Tuple[str, bool]: 品质，是否暗金
     """
     if rand <= KNIFE:
-        if random.random() <= KNIFE_ST:
-            return ("KNIFE", True)
-        return ("KNIFE", False)
+        return ("KNIFE", True) if random.random() <= KNIFE_ST else ("KNIFE", False)
     elif KNIFE < rand <= RED:
-        if random.random() <= RED_ST:
-            return ("RED", True)
-        return ("RED", False)
+        return ("RED", True) if random.random() <= RED_ST else ("RED", False)
     elif RED < rand <= PINK:
-        if random.random() <= PINK_ST:
-            return ("PINK", True)
-        return ("PINK", False)
+        return ("PINK", True) if random.random() <= PINK_ST else ("PINK", False)
     elif PINK < rand <= PURPLE:
-        if random.random() <= PURPLE_ST:
-            return ("PURPLE", True)
-        return ("PURPLE", False)
+        return ("PURPLE", True) if random.random() <= PURPLE_ST else ("PURPLE", False)
     else:
-        if random.random() <= BLUE_ST:
-            return ("BLUE", True)
-        return ("BLUE", False)
+        return ("BLUE", True) if random.random() <= BLUE_ST else ("BLUE", False)
 
 
 async def random_skin(num: int, case_name: str) -> List[Tuple[BuffSkin, float]]:
@@ -248,7 +236,7 @@ async def random_skin(num: int, case_name: str) -> List[Tuple[BuffSkin, float]]:
             skin_list_ = await BuffSkin.random_skin(
                 len(rand_list), color, abrasion, is_stattrak, case_name
             )
-            skin_list += [(skin, rand) for skin, rand in zip(skin_list_, rand_list)]
+            skin_list += list(zip(skin_list_, rand_list))
     return skin_list
 
 

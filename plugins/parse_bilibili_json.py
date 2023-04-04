@@ -52,8 +52,8 @@ _tmp = {}
 
 @parse_bilibili_json.handle()
 async def _(event: GroupMessageEvent):
-    vd_info = None
     url = None
+    vd_info = None
     if get_message_json(event.json()):
         try:
             data = json.loads(get_message_json(event.json())[0]["data"])
@@ -100,8 +100,7 @@ async def _(event: GroupMessageEvent):
                         None, resize, TEMP_PATH / f"cv_{event.user_id}.png"
                     )
                     await parse_bilibili_json.send(
-                        "[[_task|bilibili_parse]]"
-                        + image(TEMP_PATH / f"cv_{event.user_id}.png")
+                        f'[[_task|bilibili_parse]]{image(TEMP_PATH / f"cv_{event.user_id}.png")}'
                     )
                     await page.close()
                     logger.info(
@@ -126,7 +125,7 @@ async def _(event: GroupMessageEvent):
                 msg = msg[index + 2 : index + 11]
                 if is_number(msg):
                     url = f"https://www.bilibili.com/video/av{msg}"
-                    vd_info = await video.get_video_base_info("av" + msg)
+                    vd_info = await video.get_video_base_info(f"av{msg}")
         elif "https://b23.tv" in msg:
             url = "https://" + msg[msg.find("b23.tv") : msg.find("b23.tv") + 14]
             async with aiohttp.ClientSession(headers=get_user_agent()) as session:
@@ -137,36 +136,37 @@ async def _(event: GroupMessageEvent):
                     url = (str(response.url).split("?")[0]).strip("/")
                     bvid = url.split("/")[-1]
                     vd_info = await video.get_video_base_info(bvid)
-    if vd_info:
-        if (
-            url in _tmp.keys() and time.time() - _tmp[url] > 30
-        ) or url not in _tmp.keys():
-            _tmp[url] = time.time()
-            aid = vd_info["aid"]
-            title = vd_info["title"]
-            author = vd_info["owner"]["name"]
-            reply = vd_info["stat"]["reply"]  # 回复
-            favorite = vd_info["stat"]["favorite"]  # 收藏
-            coin = vd_info["stat"]["coin"]  # 投币
-            # like = vd_info['stat']['like']      # 点赞
-            # danmu = vd_info['stat']['danmaku']  # 弹幕
-            date = time.strftime("%Y-%m-%d", time.localtime(vd_info["ctime"]))
-            try:
-                await parse_bilibili_json.send(
-                    "[[_task|bilibili_parse]]"
-                    + image(vd_info["pic"])
-                    + f"\nav{aid}\n标题：{title}\n"
-                    f"UP：{author}\n"
-                    f"上传日期：{date}\n"
-                    f"回复：{reply}，收藏：{favorite}，投币：{coin}\n"
-                    f"{url}"
-                )
-            except ActionFailed:
-                logger.warning(f"{event.group_id} 发送bilibili解析失败")
-            else:
-                logger.info(
-                    f"USER {event.user_id} GROUP {event.group_id} 解析bilibili转发 {url}"
-                )
+    if (
+        vd_info
+        and (url in _tmp.keys() and time.time() - _tmp[url] > 30)
+        or url not in _tmp.keys()
+    ):
+        _tmp[url] = time.time()
+        aid = vd_info["aid"]
+        title = vd_info["title"]
+        author = vd_info["owner"]["name"]
+        reply = vd_info["stat"]["reply"]  # 回复
+        favorite = vd_info["stat"]["favorite"]  # 收藏
+        coin = vd_info["stat"]["coin"]  # 投币
+        # like = vd_info['stat']['like']      # 点赞
+        # danmu = vd_info['stat']['danmaku']  # 弹幕
+        date = time.strftime("%Y-%m-%d", time.localtime(vd_info["ctime"]))
+        try:
+            await parse_bilibili_json.send(
+                "[[_task|bilibili_parse]]"
+                + image(vd_info["pic"])
+                + f"\nav{aid}\n标题：{title}\n"
+                f"UP：{author}\n"
+                f"上传日期：{date}\n"
+                f"回复：{reply}，收藏：{favorite}，投币：{coin}\n"
+                f"{url}"
+            )
+        except ActionFailed:
+            logger.warning(f"{event.group_id} 发送bilibili解析失败")
+        else:
+            logger.info(
+                f"USER {event.user_id} GROUP {event.group_id} 解析bilibili转发 {url}"
+            )
 
 
 def resize(path: str):

@@ -48,7 +48,7 @@ class BanUser(Model):
         参数:
             :param user_qq: qq号
         """
-        logger.debug(f"获取用户ban时长", target=user_qq)
+        logger.debug("获取用户ban时长", target=user_qq)
         if user := await cls.filter(user_qq=user_qq).first():
             if (
                 time.time() - (user.ban_time + user.duration) > 0
@@ -68,7 +68,7 @@ class BanUser(Model):
         参数:
             :param user_qq: qq号
         """
-        logger.debug(f"检测是否被ban", target=user_qq)
+        logger.debug("检测是否被ban", target=user_qq)
         if await cls.check_ban_time(user_qq):
             return True
         else:
@@ -83,7 +83,7 @@ class BanUser(Model):
         参数:
             :param user_qq: qq号
         """
-        logger.debug(f"检测是否被超级用户权限封禁", target=user_qq)
+        logger.debug("检测是否被超级用户权限封禁", target=user_qq)
         if user := await cls.filter(user_qq=user_qq).first():
             if user.ban_level == 10:
                 return True

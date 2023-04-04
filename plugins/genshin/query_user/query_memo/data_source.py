@@ -220,10 +220,14 @@ def _parse_data_and_draw(
         if not transformer_available
         else "已准备完成 "
         if transformer_state
-        else f"{transformer_recovery_hour}小时后可使用"
-        if not transformer_recovery_time
-        else f"{transformer_recovery_time}天后可使用",
-        "不存在" if not transformer_available else "可使用" if transformer_state else "冷却中",
+        else f"{transformer_recovery_time}天后可使用"
+        if transformer_recovery_time
+        else f"{transformer_recovery_hour}小时后可使用",
+        "不存在"
+        if not transformer_available
+        else "可使用"
+        if transformer_state
+        else "冷却中",
     )
     A.paste(border, (10, 475))
 

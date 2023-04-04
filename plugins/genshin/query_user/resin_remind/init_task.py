@@ -137,7 +137,7 @@ def add_job(user_id: int, uid: int):
 
 async def _remind(user_id: int, uid: str):
     user = await Genshin.get_or_none(user_qq=user_id, uid=int(uid))
-    uid = str(uid)
+    uid = uid
     if uid[0] in ["1", "2"]:
         server_id = "cn_gf01"
     elif uid[0] == "5":
@@ -176,36 +176,37 @@ async def _remind(user_id: int, uid: str):
         if not user_manager.exists(uid) and current_resin >= max_resin - 40:
             if current_resin == max_resin:
                 user_manager.append(uid)
-            bot = get_bot()
-            if bot:
+            if bot := get_bot():
                 if user_id in [x["user_id"] for x in await bot.get_friend_list()]:
                     await bot.send_private_msg(
                         user_id=user_id,
                         message=msg,
                     )
-                else:
-                    if user:
-                        group_id = user.bind_group
-                        if not group_id:
-                            if group_list := await GroupInfoUser.get_user_all_group(
-                                user_id
-                            ):
-                                group_id = group_list[0]
-                        try:
-                            await bot.send_group_msg(
-                                group_id=group_id, message=at(user_id) + msg
-                            )
-                        except ActionFailed as e:
-                            logger.error(f"树脂提醒推送发生错误 {type(e)}：{e}")
+                elif user:
+                    group_id = user.bind_group
+                    if not group_id:
+                        if group_list := await GroupInfoUser.get_user_all_group(
+                            user_id
+                        ):
+                            group_id = group_list[0]
+                    try:
+                        await bot.send_group_msg(
+                            group_id=group_id, message=at(user_id) + msg
+                        )
+                    except ActionFailed as e:
+                        logger.error(f"树脂提醒推送发生错误 {type(e)}：{e}")
 
     if not next_time:
-        if user_manager.check(uid) and Config.get_config(
-            "resin_remind", "AUTO_CLOSE_QUERY_FAIL_RESIN_REMIND"
+        if (
+            user_manager.check(uid)
+            and Config.get_config(
+                "resin_remind", "AUTO_CLOSE_QUERY_FAIL_RESIN_REMIND"
+            )
+            and user
         ):
-            if user:
-                user.resin_remind = False
-                user.resin_recovery_time = None
-                await user.save(update_fields=["resin_recovery_time", "resin_remind"])
+            user.resin_remind = False
+            user.resin_recovery_time = None
+            await user.save(update_fields=["resin_recovery_time", "resin_remind"])
         next_time = now + timedelta(minutes=(20 + random.randint(5, 20)) * 8)
         user_manager.add_error_count(uid)
     else:

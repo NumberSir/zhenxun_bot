@@ -24,7 +24,7 @@ async def draw_card(skin: BuffSkin, rand: str) -> BuildImage:
     Returns:
         BuildImage: BuildImage
     """
-    name = skin.name + "-" + skin.skin_name + "-" + skin.abrasion
+    name = f"{skin.name}-{skin.skin_name}-{skin.abrasion}"
     file_path = BASE_PATH / cn2py(skin.case_name.split(",")[0]) / f"{cn2py(name)}.jpg"
     if not file_path.exists():
         logger.warning(f"皮肤图片: {name} 不存在", "开箱")
@@ -38,7 +38,7 @@ async def draw_card(skin: BuffSkin, rand: str) -> BuildImage:
     await skin_bk.atext((10, 10), skin.name, (255, 255, 255))
     name_icon = BuildImage(20, 20, background=ICON_PATH / "name_white.png")
     await skin_bk.apaste(name_icon, (240, 13), True)
-    await skin_bk.atext((265, 15), f"名称:", (255, 255, 255), font_size=20)
+    await skin_bk.atext((265, 15), "名称:", (255, 255, 255), font_size=20)
     await skin_bk.atext(
         (300, 9),
         f"{skin.skin_name + ('(St)' if skin.is_stattrak else '')}",
@@ -73,7 +73,7 @@ async def generate_skin(skin: BuffSkin, update_count: int) -> Optional[BuildImag
     Returns:
         Optional[BuildImage]: 图片
     """
-    name = skin.name + "-" + skin.skin_name + "-" + skin.abrasion
+    name = f"{skin.name}-{skin.skin_name}-{skin.abrasion}"
     file_path = BASE_PATH / cn2py(skin.case_name.split(",")[0]) / f"{cn2py(name)}.jpg"
     if not file_path.exists():
         logger.warning(f"皮肤图片: {name} 不存在", "查看武器箱")

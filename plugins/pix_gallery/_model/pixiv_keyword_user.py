@@ -45,10 +45,7 @@ class PixivKeywordUser(Model):
         说明:
             获取黑名单PID
         """
-        black_pid = []
         keyword_list = await cls.filter(user_qq=114514).values_list(
             "keyword", flat=True
         )
-        for image in keyword_list:
-            black_pid.append(image[6:])
-        return black_pid
+        return [image[6:] for image in keyword_list]

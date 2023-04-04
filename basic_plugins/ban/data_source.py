@@ -19,15 +19,16 @@ def parse_ban_time(msg: str) -> Union[int, str]:
             return -1
         msg_split = msg.split()
         if len(msg_split) == 1:
-            if not is_number(msg_split[0].strip()):
-                return "参数必须是数字！"
-            return int(msg_split[0]) * 60 * 60
-        else:
-            if not is_number(msg_split[0].strip()) or not is_number(
-                msg_split[1].strip()
-            ):
-                return "参数必须是数字！"
-            return int(msg_split[0]) * 60 * 60 + int(msg_split[1]) * 60
+            return (
+                int(msg_split[0]) * 60 * 60
+                if is_number(msg_split[0].strip())
+                else "参数必须是数字！"
+            )
+        if not is_number(msg_split[0].strip()) or not is_number(
+            msg_split[1].strip()
+        ):
+            return "参数必须是数字！"
+        return int(msg_split[0]) * 60 * 60 + int(msg_split[1]) * 60
     except ValueError as e:
         logger.error("解析ban时长错误", ".ban", e=e)
         return "时长不可以带小数点！"
@@ -59,18 +60,15 @@ async def a_ban(
             f"将 [Target]({qq})封禁 时长 {time / 60} 分钟", ".ban", event.user_id, group_id
         )
         result = f"已经将 {user_name} 加入{NICKNAME}的黑名单了！"
-        if time != -1:
-            result += f"将在 {time / 60} 分钟后解封"
-        else:
-            result += f"将在 ∞ 分钟后解封"
+        result += f"将在 {time / 60} 分钟后解封" if time != -1 else "将在 ∞ 分钟后解封"
     else:
         ban_time = await BanUser.check_ban_time(qq)
         if isinstance(ban_time, int):
             ban_time = abs(float(ban_time))
             if ban_time < 60:
-                ban_time = str(ban_time) + " 秒"
+                ban_time = f"{str(ban_time)} 秒"
             else:
-                ban_time = str(int(ban_time / 60)) + " 分钟"
+                ban_time = f"{int(ban_time / 60)} 分钟"
         else:
             ban_time += " 分钟"
         result = f"{user_name} 已在黑名单！预计 {ban_time}后解封"

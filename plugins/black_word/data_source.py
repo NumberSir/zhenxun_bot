@@ -59,7 +59,7 @@ async def show_black_text_image(
         gid_str += f"{x.group_id}\n"
         plant_text = " ".join(x.plant_text.split("\n"))
         if A.getsize(plant_text)[0] > 200:
-            plant_text = plant_text[:20] + "..."
+            plant_text = f"{plant_text[:20]}..."
         plant_text_str += f"{plant_text}\n"
         black_word_str += f"{x.black_word}\n"
         punish_str += f"{x.punish}\n"
@@ -78,7 +78,7 @@ async def show_black_text_image(
         (create_time_str, "记录日期"),
     ]:
         img = await text2image(s, color="#f9f6f2", _add_height=2.1)
-        w = _tmp_img.getsize(type_)[0] if _tmp_img.getsize(type_)[0] > img.w else img.w
+        w = max(_tmp_img.getsize(type_)[0], img.w)
         A = BuildImage(w + 11, img.h + 50, color="#f9f6f2", font_size=35, font="CJGaoDeGuo.otf")
         await A.atext((10, 10), type_)
         await A.apaste(img, (0, 50))
@@ -87,7 +87,7 @@ async def show_black_text_image(
     w, h = 0, 0
     for img in image_list:
         w += img.w + 20
-        h = img.h if img.h > h else h
+        h = max(img.h, h)
         horizontal_line.append(img.w)
     A = BuildImage(w, h, color="#f9f6f2")
     current_w = 0

@@ -90,7 +90,7 @@ async def _(
             await ban.finish(time, at_sender=True)
         user_level = await LevelUser.get_user_level(event.user_id, event.group_id)
         is_not_superuser = str(event.user_id) not in bot.config.superusers
-        if cmd in [".ban", "/ban"]:
+        if cmd in {".ban", "/ban"}:
             at_user_level = await LevelUser.get_user_level(qq, event.group_id)
             if user_level <= at_user_level and is_not_superuser:
                 await ban.finish(
@@ -105,7 +105,7 @@ async def _(
                     f"ban掉 {user_name} 的管理员权限比您高，无法进行unban", at_sender=True
                 )
             if await BanUser.unban(qq):
-                logger.info(f"解除用户封禁", cmd, event.user_id, event.group_id, qq)
+                logger.info("解除用户封禁", cmd, event.user_id, event.group_id, qq)
                 result = f"已经将 {user_name} 从黑名单中删除了！"
             else:
                 result = f"{user_name} 不在黑名单！"
@@ -127,17 +127,14 @@ async def _(
         if msg_split and is_number(msg_split[0]):
             qq = int(msg_split[0])
             param = msg_split[1:]
-            if cmd in [".ban", "/ban"]:
+            if cmd in {".ban", "/ban"}:
                 time = parse_ban_time(" ".join(param))
                 if isinstance(time, str):
                     logger.info(time, cmd, event.user_id, target=qq)
                     await ban.finish(time)
                 result = await a_ban(qq, time, str(qq), event, 9)
             else:
-                if await BanUser.unban(qq):
-                    result = f"已经把 {qq} 从黑名单中删除了！"
-                else:
-                    result = f"{qq} 不在黑名单！"
+                result = f"已经把 {qq} 从黑名单中删除了！" if await BanUser.unban(qq) else f"{qq} 不在黑名单！"
             await ban.send(result)
             logger.info(result, cmd, event.user_id, target=qq)
         else:

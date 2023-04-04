@@ -86,7 +86,7 @@ __plugin_settings__ = {
 }
 __plugin_task__ = {"open_case_reset_remind": "每日开箱重置提醒"}
 __plugin_cd_limit__ = {"rst": "着什么急啊，慢慢来！"}
-__plugin_resources__ = {f"cases": IMAGE_PATH}
+__plugin_resources__ = {"cases": IMAGE_PATH}
 __plugin_configs__ = {
     "INITIAL_OPEN_CASE_COUNT": {
         "value": 20,
@@ -201,14 +201,12 @@ async def _(event: MessageEvent, arg: Message = CommandArg(), cmd: str = OneComm
     msg = msg.replace("-S", "").strip()
     if not msg:
         case_list = []
-        skin_list = []
         for i, case_name in enumerate(CASE2ID):
             if case_name in CaseManager.CURRENT_CASES:
                 case_list.append(f"{i+1}.{case_name} [已更新]")
             else:
                 case_list.append(f"{i+1}.{case_name}")
-        for skin_name in KNIFE2ID:
-            skin_list.append(f"{skin_name}")
+        skin_list = [f"{skin_name}" for skin_name in KNIFE2ID]
         text = "武器箱:\n" + "\n".join(case_list) + "\n皮肤:\n" + ", ".join(skin_list)
         await update_case.finish(
             "未指定武器箱, 当前已包含武器箱/皮肤\n"
@@ -226,7 +224,7 @@ async def _(event: MessageEvent, arg: Message = CommandArg(), cmd: str = OneComm
             try:
                 info = await update_skin_data(case_name, is_update_case_name)
                 if "请先登录" in info:
-                    await update_case.finish(f"未登录, 已停止更新...")
+                    await update_case.finish("未登录, 已停止更新...")
                 rand = random.randint(300, 500)
                 result = f"更新全部{type_}完成"
                 if i < len(case_list) - 1:
@@ -284,5 +282,5 @@ async def _():
         auto_update,
         "date",
         run_date=date.replace(microsecond=0),
-        id=f"auto_update_csgo_cases",
+        id="auto_update_csgo_cases",
     )

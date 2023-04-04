@@ -43,31 +43,32 @@ async def get_setu_urls(
             )
             if response.status_code == 200:
                 data = response.json()
-                if not data["error"]:
-                    data = data["data"]
-                    (
-                        urls,
-                        text_list,
-                        add_databases_list,
-                    ) = await asyncio.get_event_loop().run_in_executor(
-                        None, _setu_data_process, data, command
-                    )
-                    num = num if num < len(data) else len(data)
-                    random_idx = random.sample(range(len(data)), num)
-                    x_urls = []
-                    x_text_lst = []
-                    for x in random_idx:
-                        x_urls.append(urls[x])
-                        x_text_lst.append(text_list[x])
-                    if not x_urls:
-                        return ["没找到符合条件的色图..."], [], [], 401
-                    return x_urls, x_text_lst, add_databases_list, 200
-                else:
+                if data["error"]:
                     return ["没找到符合条件的色图..."], [], [], 401
+                data = data["data"]
+                (
+                    urls,
+                    text_list,
+                    add_databases_list,
+                ) = await asyncio.get_event_loop().run_in_executor(
+                    None, _setu_data_process, data, command
+                )
+                num = min(num, len(data))
+                random_idx = random.sample(range(len(data)), num)
+                x_urls = []
+                x_text_lst = []
+                for x in random_idx:
+                    x_urls.append(urls[x])
+                    x_text_lst.append(text_list[x])
+                return (
+                    (x_urls, x_text_lst, add_databases_list, 200)
+                    if x_urls
+                    else (["没找到符合条件的色图..."], [], [], 401)
+                )
         except TimeoutError as e:
-            logger.error(f"获取图片URL超时", "色图", e=e)
+            logger.error("获取图片URL超时", "色图", e=e)
         except Exception as e:
-            logger.error(f"访问页面错误", "色图", e=e)
+            logger.error("访问页面错误", "色图", e=e)
     return ["我网线被人拔了..QAQ"], [], [], 999
 
 
@@ -102,18 +103,21 @@ async def search_online_setu(
                 timeout=Config.get_config("send_setu", "TIMEOUT"),
             ):
                 continue
-            if id_ is not None:
-                if os.path.getsize(base_path / f"{index}.jpg") > 1024 * 1024 * 1.5:
-                    compressed_image(
-                        base_path / f"{index}.jpg",
-                    )
+            if (
+                id_ is not None
+                and os.path.getsize(base_path / f"{index}.jpg")
+                > 1024 * 1024 * 1.5
+            ):
+                compressed_image(
+                    base_path / f"{index}.jpg",
+                )
             logger.info(f"下载 lolicon 图片 {url_} 成功， id：{index}")
             change_img_md5(file)
             return image(file), index
         except TimeoutError as e:
-            logger.error(f"下载图片超时", "色图", e=e)
+            logger.error("下载图片超时", "色图", e=e)
         except Exception as e:
-            logger.error(f"下载图片错误", "色图", e=e)
+            logger.error("下载图片错误", "色图", e=e)
     return "图片被小怪兽恰掉啦..!QAQ", -1
 
 
@@ -171,9 +175,7 @@ async def get_setu_list(
         image_list = await Setu.query_image(tags=tags, r18=r18)
     else:
         image_list = await Setu.query_image(r18=r18)
-    if not image_list:
-        return ["没找到符合条件的色图..."], 998
-    return image_list, 200  # type: ignore
+    return (image_list, 200) if image_list else (["没找到符合条件的色图..."], 998)
 
 
 # 初始化消息
@@ -197,10 +199,9 @@ def gen_message(setu_image: Setu) -> str:
 
 # 罗翔老师！
 def get_luoxiang(impression):
-    initial_setu_probability = Config.get_config(
+    if initial_setu_probability := Config.get_config(
         "send_setu", "INITIAL_SETU_PROBABILITY"
-    )
-    if initial_setu_probability:
+    ):
         probability = float(impression) + initial_setu_probability * 100
         if probability < random.randint(1, 101):
             return (
@@ -248,12 +249,9 @@ def _setu_data_process(
         pid = data[i]["pid"]
         urls.append(img_url)
         text_list.append(f"title：{title}\nauthor：{author}\nPID：{pid}")
-        tags = []
-        for j in range(len(data[i]["tags"])):
-            tags.append(data[i]["tags"][j])
-        if command != "色图r":
-            if "R-18" in tags:
-                tags.remove("R-18")
+        tags = [data[i]["tags"][j] for j in range(len(data[i]["tags"]))]
+        if command != "色图r" and "R-18" in tags:
+            tags.remove("R-18")
         add_databases_list.append(
             (
                 title,

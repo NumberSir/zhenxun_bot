@@ -13,20 +13,20 @@ __plugin_author__ = "HibiKier"
 
 
 async def update():
-    bot_list = get_bots()
-    if bot_list:
-        used_group = []
-        for key in bot_list:
-            bot = bot_list[key]
-            gl = await bot.get_group_list()
-            gl = [g["group_id"] for g in gl if g["group_id"] not in used_group]
-            for g in gl:
-                used_group.append(g)
-                try:
-                    await update_member_info(bot, g)  # type: ignore
-                    logger.debug(f"更新群组成员信息成功", "自动更新群组成员信息", group_id=g)
-                except Exception as e:
-                    logger.error(f"更新群组成员信息错误", "自动更新群组成员信息", group_id=g, e=e)
+    if not (bot_list := get_bots()):
+        return
+    used_group = []
+    for key in bot_list:
+        bot = bot_list[key]
+        gl = await bot.get_group_list()
+        gl = [g["group_id"] for g in gl if g["group_id"] not in used_group]
+        for g in gl:
+            used_group.append(g)
+            try:
+                await update_member_info(bot, g)  # type: ignore
+                logger.debug("更新群组成员信息成功", "自动更新群组成员信息", group_id=g)
+            except Exception as e:
+                logger.error("更新群组成员信息错误", "自动更新群组成员信息", group_id=g, e=e)
 
 
 # 自动更新群员信息

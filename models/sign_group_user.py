@@ -57,10 +57,7 @@ class SignGroupUser(Model):
         参数:
             :param group_id: 群号
         """
-        if group_id:
-            query = cls.filter(group_id=group_id)
-        else:
-            query = cls
+        query = cls.filter(group_id=group_id) if group_id else cls
         value_list = await query.all().values_list("user_qq", "group_id", "impression")  # type: ignore
         qq_list = []
         group_list = []

@@ -52,7 +52,7 @@ async def _(bot: Bot, event: MessageEvent):
                 "群聊信息更新成功", "更新群信息", event.user_id, target=group_info["group_id"]
             )
         except Exception as e:
-            logger.error(f"更新群聊信息失败", "更新群信息", event.user_id, target=g, e=e)
+            logger.error("更新群聊信息失败", "更新群信息", event.user_id, target=g, e=e)
     await update_group_info.send(f"成功更新了 {len(gl)} 个群的信息")
     logger.info(f"更新群聊信息完成，共更新了 {len(gl)} 个群的信息", "更新群信息", event.user_id)
 
@@ -60,18 +60,17 @@ async def _(bot: Bot, event: MessageEvent):
 @update_friend_info.handle()
 async def _(bot: Bot, event: MessageEvent):
     num = 0
-    error_list = []
     fl = await bot.get_friend_list()
     for f in fl:
         try:
             await FriendUser.update_or_create(
                 user_id=f["user_id"], defaults={"nickname": f["nickname"]}
             )
-            logger.debug(f"更新好友信息成功", "更新好友信息", event.user_id, target=f["user_id"])
+            logger.debug("更新好友信息成功", "更新好友信息", event.user_id, target=f["user_id"])
             num += 1
         except Exception as e:
-            logger.error(f"更新好友信息失败", "更新好友信息", event.user_id, target=f["user_id"], e=e)
+            logger.error("更新好友信息失败", "更新好友信息", event.user_id, target=f["user_id"], e=e)
     await update_friend_info.send(f"成功更新了 {num} 个好友的信息")
-    if error_list:
+    if error_list := []:
         await update_friend_info.send(f"以下好友更新失败:\n" + "\n".join(error_list))
     logger.info(f"更新好友信息完成，共更新了 {num} 个群的信息", "更新好友信息", event.user_id)

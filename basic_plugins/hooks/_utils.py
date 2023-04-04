@@ -162,7 +162,7 @@ class AuthChecker:
                         await BagUser.spend_gold(user_id, group_id, cost_gold)
                         logger.debug(f"调用功能花费金币: {cost_gold}", "HOOK", user_id, group_id)
         except IsSuperuserException:
-            logger.debug(f"超级用户或被ban跳过权限检测...", "HOOK", user_id, group_id)
+            logger.debug("超级用户或被ban跳过权限检测...", "HOOK", user_id, group_id)
 
     async def auth_limit(self, plugin_name: str, bot: Bot, event: Event):
         """
@@ -259,151 +259,153 @@ class AuthChecker:
             :param bot: bot
             :param event: event
         """
-        if plugin_name in plugins2settings_manager.keys() and matcher.priority not in [
-            1,
-            999,
-        ]:
-            user_id = getattr(event, "user_id", None)
-            if not user_id:
-                return
-            group_id = getattr(event, "group_id", None)
+        if (
+            plugin_name not in plugins2settings_manager.keys()
+            or matcher.priority
+            in [
+                1,
+                999,
+            ]
+        ):
+            return
+        user_id = getattr(event, "user_id", None)
+        if not user_id:
+            return
+        group_id = getattr(event, "group_id", None)
             # 戳一戳单独判断
-            if (
-                isinstance(event, GroupMessageEvent)
-                or isinstance(event, PokeNotifyEvent)
-                or matcher.plugin_name in other_limit_plugins
-            ) and group_id:
-                if status_message_manager.get(group_id) is None:
-                    status_message_manager.delete(group_id)
-                if plugins2settings_manager[
-                    plugin_name
-                ].level > group_manager.get_group_level(group_id):
-                    try:
-                        if (
-                            self._flmt_g.check(user_id)
-                            and plugin_name not in ignore_rst_module
-                        ):
-                            self._flmt_g.start_cd(user_id)
-                            await bot.send_group_msg(
-                                group_id=group_id, message="群权限不足..."
-                            )
-                    except ActionFailed:
-                        pass
-                    if event.is_tome():
-                        status_message_manager.add(group_id)
-                    set_block_limit_false(event, plugin_name)
-                    logger.debug(f"{plugin_name} 群权限不足...", "HOOK", user_id, group_id)
-                    raise IgnoredException("群权限不足")
-                # 插件状态
-                if not group_manager.get_plugin_status(plugin_name, group_id):
-                    try:
-                        if plugin_name not in ignore_rst_module and self._flmt_s.check(
-                            group_id
-                        ):
-                            self._flmt_s.start_cd(group_id)
-                            await bot.send_group_msg(
-                                group_id=group_id, message="该群未开启此功能.."
-                            )
-                    except ActionFailed:
-                        pass
-                    if event.is_tome():
-                        status_message_manager.add(group_id)
-                    set_block_limit_false(event, plugin_name)
-                    logger.debug(f"{plugin_name} 未开启此功能...", "HOOK", user_id, group_id)
-                    raise IgnoredException("未开启此功能...")
-                # 管理员禁用
-                if not group_manager.get_plugin_status(
-                    f"{plugin_name}:super", group_id
-                ):
-                    try:
-                        if (
-                            self._flmt_s.check(group_id)
-                            and plugin_name not in ignore_rst_module
-                        ):
-                            self._flmt_s.start_cd(group_id)
-                            await bot.send_group_msg(
-                                group_id=group_id, message="管理员禁用了此群该功能..."
-                            )
-                    except ActionFailed:
-                        pass
-                    if event.is_tome():
-                        status_message_manager.add(group_id)
-                    set_block_limit_false(event, plugin_name)
-                    logger.debug(
-                        f"{plugin_name} 管理员禁用了此群该功能...", "HOOK", user_id, group_id
-                    )
-                    raise IgnoredException("管理员禁用了此群该功能...")
-                # 群聊禁用
-                if not plugins_manager.get_plugin_status(
-                    plugin_name, block_type="group"
-                ):
-                    try:
-                        if (
-                            self._flmt_c.check(group_id)
-                            and plugin_name not in ignore_rst_module
-                        ):
-                            self._flmt_c.start_cd(group_id)
-                            await bot.send_group_msg(
-                                group_id=group_id, message="该功能在群聊中已被禁用..."
-                            )
-                    except ActionFailed:
-                        pass
-                    if event.is_tome():
-                        status_message_manager.add(group_id)
-                    set_block_limit_false(event, plugin_name)
-                    logger.debug(
-                        f"{plugin_name} 该插件在群聊中已被禁用...", "HOOK", user_id, group_id
-                    )
-                    raise IgnoredException("该插件在群聊中已被禁用...")
-            else:
-                # 私聊禁用
-                if not plugins_manager.get_plugin_status(
-                    plugin_name, block_type="private"
-                ):
-                    try:
-                        if self._flmt_c.check(user_id):
-                            self._flmt_c.start_cd(user_id)
-                            await bot.send_private_msg(
-                                user_id=user_id, message="该功能在私聊中已被禁用..."
-                            )
-                    except ActionFailed:
-                        pass
-                    if event.is_tome():
-                        status_message_manager.add(user_id)
-                    set_block_limit_false(event, plugin_name)
-                    logger.debug(
-                        f"{plugin_name} 该插件在私聊中已被禁用...", "HOOK", user_id, group_id
-                    )
-                    raise IgnoredException("该插件在私聊中已被禁用...")
-            # 维护
-            if not plugins_manager.get_plugin_status(plugin_name, block_type="all"):
-                if isinstance(
-                    event, GroupMessageEvent
-                ) and group_manager.check_group_is_white(event.group_id):
-                    raise IsSuperuserException()
+        if (
+            isinstance(event, (GroupMessageEvent, PokeNotifyEvent))
+            or matcher.plugin_name in other_limit_plugins
+        ) and group_id:
+            if status_message_manager.get(group_id) is None:
+                status_message_manager.delete(group_id)
+            if plugins2settings_manager[
+                plugin_name
+            ].level > group_manager.get_group_level(group_id):
                 try:
-                    if isinstance(event, GroupMessageEvent):
-                        if (
-                            self._flmt_c.check(event.group_id)
-                            and plugin_name not in ignore_rst_module
-                        ):
-                            self._flmt_c.start_cd(event.group_id)
-                            logger.info(f"{event.user_id} ||XXXXXX: {matcher.module}")
-                            await bot.send_group_msg(
-                                group_id=event.group_id, message="此功能正在维护..."
-                            )
-                    else:
-                        await bot.send_private_msg(
-                            user_id=user_id, message="此功能正在维护..."
+                    if (
+                        self._flmt_g.check(user_id)
+                        and plugin_name not in ignore_rst_module
+                    ):
+                        self._flmt_g.start_cd(user_id)
+                        await bot.send_group_msg(
+                            group_id=group_id, message="群权限不足..."
                         )
                 except ActionFailed:
                     pass
                 if event.is_tome():
-                    id_ = group_id or user_id
-                    status_message_manager.add(id_)
+                    status_message_manager.add(group_id)
                 set_block_limit_false(event, plugin_name)
-                logger.debug(f"{plugin_name} 此功能正在维护...", "HOOK", user_id, group_id)
-                raise IgnoredException("此功能正在维护...")
+                logger.debug(f"{plugin_name} 群权限不足...", "HOOK", user_id, group_id)
+                raise IgnoredException("群权限不足")
+            # 插件状态
+            if not group_manager.get_plugin_status(plugin_name, group_id):
+                try:
+                    if plugin_name not in ignore_rst_module and self._flmt_s.check(
+                        group_id
+                    ):
+                        self._flmt_s.start_cd(group_id)
+                        await bot.send_group_msg(
+                            group_id=group_id, message="该群未开启此功能.."
+                        )
+                except ActionFailed:
+                    pass
+                if event.is_tome():
+                    status_message_manager.add(group_id)
+                set_block_limit_false(event, plugin_name)
+                logger.debug(f"{plugin_name} 未开启此功能...", "HOOK", user_id, group_id)
+                raise IgnoredException("未开启此功能...")
+            # 管理员禁用
+            if not group_manager.get_plugin_status(
+                f"{plugin_name}:super", group_id
+            ):
+                try:
+                    if (
+                        self._flmt_s.check(group_id)
+                        and plugin_name not in ignore_rst_module
+                    ):
+                        self._flmt_s.start_cd(group_id)
+                        await bot.send_group_msg(
+                            group_id=group_id, message="管理员禁用了此群该功能..."
+                        )
+                except ActionFailed:
+                    pass
+                if event.is_tome():
+                    status_message_manager.add(group_id)
+                set_block_limit_false(event, plugin_name)
+                logger.debug(
+                    f"{plugin_name} 管理员禁用了此群该功能...", "HOOK", user_id, group_id
+                )
+                raise IgnoredException("管理员禁用了此群该功能...")
+            # 群聊禁用
+            if not plugins_manager.get_plugin_status(
+                plugin_name, block_type="group"
+            ):
+                try:
+                    if (
+                        self._flmt_c.check(group_id)
+                        and plugin_name not in ignore_rst_module
+                    ):
+                        self._flmt_c.start_cd(group_id)
+                        await bot.send_group_msg(
+                            group_id=group_id, message="该功能在群聊中已被禁用..."
+                        )
+                except ActionFailed:
+                    pass
+                if event.is_tome():
+                    status_message_manager.add(group_id)
+                set_block_limit_false(event, plugin_name)
+                logger.debug(
+                    f"{plugin_name} 该插件在群聊中已被禁用...", "HOOK", user_id, group_id
+                )
+                raise IgnoredException("该插件在群聊中已被禁用...")
+        elif not plugins_manager.get_plugin_status(
+                    plugin_name, block_type="private"
+                ):
+            try:
+                if self._flmt_c.check(user_id):
+                    self._flmt_c.start_cd(user_id)
+                    await bot.send_private_msg(
+                        user_id=user_id, message="该功能在私聊中已被禁用..."
+                    )
+            except ActionFailed:
+                pass
+            if event.is_tome():
+                status_message_manager.add(user_id)
+            set_block_limit_false(event, plugin_name)
+            logger.debug(
+                f"{plugin_name} 该插件在私聊中已被禁用...", "HOOK", user_id, group_id
+            )
+            raise IgnoredException("该插件在私聊中已被禁用...")
+        # 维护
+        if not plugins_manager.get_plugin_status(plugin_name, block_type="all"):
+            if isinstance(
+                event, GroupMessageEvent
+            ) and group_manager.check_group_is_white(event.group_id):
+                raise IsSuperuserException()
+            try:
+                if isinstance(event, GroupMessageEvent):
+                    if (
+                        self._flmt_c.check(event.group_id)
+                        and plugin_name not in ignore_rst_module
+                    ):
+                        self._flmt_c.start_cd(event.group_id)
+                        logger.info(f"{event.user_id} ||XXXXXX: {matcher.module}")
+                        await bot.send_group_msg(
+                            group_id=event.group_id, message="此功能正在维护..."
+                        )
+                else:
+                    await bot.send_private_msg(
+                        user_id=user_id, message="此功能正在维护..."
+                    )
+            except ActionFailed:
+                pass
+            if event.is_tome():
+                id_ = group_id or user_id
+                status_message_manager.add(id_)
+            set_block_limit_false(event, plugin_name)
+            logger.debug(f"{plugin_name} 此功能正在维护...", "HOOK", user_id, group_id)
+            raise IgnoredException("此功能正在维护...")
 
     async def auth_admin(
         self, plugin_name: str, matcher: Matcher, bot: Bot, event: Event
@@ -447,22 +449,21 @@ class AuthChecker:
                         status_message_manager.add(event.group_id)
                     logger.debug(f"{plugin_name} 管理员权限不足...", "HOOK", user_id, group_id)
                     raise IgnoredException("管理员权限不足")
-            else:
-                if not await LevelUser.check_level(
+            elif not await LevelUser.check_level(
                     user_id, 0, admin_manager.get_plugin_level(plugin_name)
                 ):
-                    try:
-                        await bot.send_private_msg(
-                            user_id=user_id,
-                            message=f"你的权限不足喔，该功能需要的权限等级：{admin_manager.get_plugin_level(plugin_name)}",
-                        )
-                    except ActionFailed:
-                        pass
-                    set_block_limit_false(event, plugin_name)
-                    if event.is_tome():
-                        status_message_manager.add(user_id)
-                    logger.debug(f"{plugin_name} 管理员权限不足...", "HOOK", user_id, group_id)
-                    raise IgnoredException("权限不足")
+                try:
+                    await bot.send_private_msg(
+                        user_id=user_id,
+                        message=f"你的权限不足喔，该功能需要的权限等级：{admin_manager.get_plugin_level(plugin_name)}",
+                    )
+                except ActionFailed:
+                    pass
+                set_block_limit_false(event, plugin_name)
+                if event.is_tome():
+                    status_message_manager.add(user_id)
+                logger.debug(f"{plugin_name} 管理员权限不足...", "HOOK", user_id, group_id)
+                raise IgnoredException("权限不足")
 
     def auth_group(self, plugin_name: str, bot: Bot, event: Event):
         """

@@ -57,6 +57,10 @@ async def _(
         logger.info(f"USER {event.user_id} GROUP {event.group_id} 自定义群欢迎消息：{msg}")
     except Exception as e:
         logger.error(
-            f"自定义进群欢迎消息发生错误", cmd, event.user_id, getattr(event, "group_id", None), e=e
+            "自定义进群欢迎消息发生错误",
+            cmd,
+            event.user_id,
+            getattr(event, "group_id", None),
+            e=e,
         )
         await custom_welcome.send("发生了一些未知错误...")

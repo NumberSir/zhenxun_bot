@@ -75,15 +75,15 @@ class BagUser(Model):
         """
         user, _ = await cls.get_or_create(user_qq=user_qq, group_id=group_id)
         if only_active and user.property:
-            data = {}
             name_list = [
                 x.goods_name
                 for x in await GoodsInfo.get_all_goods()
                 if not x.is_passive
             ]
-            for key in [x for x in user.property if x in name_list]:
-                data[key] = user.property[key]
-            return data
+            return {
+                key: user.property[key]
+                for key in [x for x in user.property if x in name_list]
+            }
         return user.property
 
     @classmethod

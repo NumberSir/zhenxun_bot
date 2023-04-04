@@ -176,10 +176,10 @@ class BilibiliSub(Model):
         for x in query:
             if x.sub_type == "live":
                 live_data.append(x)
-            if x.sub_type == "up":
-                up_data.append(x)
-            if x.sub_type == "season":
+            elif x.sub_type == "season":
                 season_data.append(x)
+            elif x.sub_type == "up":
+                up_data.append(x)
         return live_data, up_data, season_data
 
     @classmethod

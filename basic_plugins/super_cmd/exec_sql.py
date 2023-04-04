@@ -38,7 +38,6 @@ async def _(bot: Bot, event: MessageEvent, arg: Message = CommandArg()):
     # try:
     # 判断是否为SELECT语句
     if sql.lower().startswith("select"):
-        pass
         #     # 分割语句
         try:
             page = int(sql.split(" ")[-1]) - 1
@@ -55,9 +54,7 @@ async def _(bot: Bot, event: MessageEvent, arg: Message = CommandArg()):
         keys = res[0].keys()
         # 每页10条
         for i in res[page * 10 : (page + 1) * 10]:
-            msg = ""
-            for key in keys:
-                msg += f"{key}: {i[key]}\n"
+            msg = "".join(f"{key}: {i[key]}\n" for key in keys)
             msg += f"第{page+1}页第{res.index(i)+1}条"
             msg_list.append(msg)
         # 检查是私聊还是群聊

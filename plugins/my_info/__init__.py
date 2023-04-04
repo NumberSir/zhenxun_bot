@@ -34,8 +34,8 @@ async def _(event: GroupMessageEvent):
 async def get_member_info(user_qq: int, group_id: int) -> str:
     if user := await GroupInfoUser.get_or_none(user_qq=user_qq, group_id=group_id):
         result = ""
-        result += "昵称:" + user.user_name + "\n"
-        result += "加群时间:" + str(user.user_join_time.date())
+        result += f"昵称:{user.user_name}" + "\n"
+        result += f"加群时间:{str(user.user_join_time.date())}"
         return result
     else:
         return "该群员不在列表中，请更新群成员信息"

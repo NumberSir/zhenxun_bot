@@ -25,13 +25,10 @@ def timestamp() -> int:
 
 # 获取请求Header里的DS 当web为true则生成网页端的DS
 def get_ds(web: bool) -> str:
-    if web:
-        n = mihoyobbs_Salt_web
-    else:
-        n = mihoyobbs_Salt
+    n = mihoyobbs_Salt_web if web else mihoyobbs_Salt
     i = str(timestamp())
     r = random_text(6)
-    c = md5("salt=" + n + "&t=" + i + "&r=" + r)
+    c = md5(f"salt={n}&t={i}&r={r}")
     return f"{i},{r},{c}"
 
 
@@ -41,7 +38,7 @@ def get_ds2(q: str, b: str) -> str:
     i = str(timestamp())
     r = str(random.randint(100001, 200000))
     add = f'&b={b}&q={q}'
-    c = md5("salt=" + n + "&t=" + i + "&r=" + r + add)
+    c = md5(f"salt={n}&t={i}&r={r}{add}")
     return f"{i},{r},{c}"
 
 
@@ -60,6 +57,5 @@ def get_item(raw_data: dict) -> str:
 # 获取明天早晨0点的时间戳
 def next_day() -> int:
     now_time = int(time.time())
-    next_day_time = now_time - now_time % 86400 + time.timezone + 86400
-    return next_day_time
+    return now_time - now_time % 86400 + time.timezone + 86400
 
