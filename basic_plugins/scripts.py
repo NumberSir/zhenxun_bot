@@ -28,8 +28,8 @@ async def update_city():
     这里直接更新，避免插件内代码重复
     """
     china_city = TEXT_PATH / "china_city.json"
-    data = {}
     if not china_city.exists():
+        data = {}
         try:
             logger.debug("开始更新城市列表...")
             res = await AsyncHttpx.get(
@@ -55,7 +55,7 @@ async def update_city():
         except ValueError as e:
             logger.warning("自动城市列表失败.....", e=e)
         except Exception as e:
-            logger.error(f"自动城市列表未知错误", e=e)
+            logger.error("自动城市列表未知错误", e=e)
 
 
 @driver.on_bot_connect
@@ -64,38 +64,39 @@ async def _(bot: Bot):
     版本某些需要的变换
     """
     # 清空不存在的群聊信息，并将已所有已存在的群聊group_flag设置为1（认证所有已存在的群）
-    if not await GroupInfo.get_or_none(group_id=114514):
-        # 标识符，该功能只需执行一次
-        await GroupInfo.create(
-            group_id=114514,
-            group_name="114514",
-            max_member_count=114514,
-            member_count=114514,
-            group_flag=1,
-        )
-        group_list = await bot.get_group_list()
-        group_list = [g["group_id"] for g in group_list]
-        _gl = [x.group_id for x in await GroupInfo.all()]
-        if 114514 in _gl:
-            _gl.remove(114514)
-        for group_id in _gl:
-            if group_id in group_list:
-                if group := await GroupInfo.get_or_none(group_id=group_id):
-                    group.group_flag = 1
-                    await group.save(update_fields=["group_flag"])
-                else:
-                    group_info = await bot.get_group_info(group_id=group_id)
-                    await GroupInfo.create(
-                        group_id=group_info["group_id"],
-                        group_name=group_info["group_name"],
-                        max_member_count=group_info["max_member_count"],
-                        member_count=group_info["member_count"],
-                        group_flag=1,
-                    )
-                logger.info(f"已添加群认证...", group_id=group_id)
+    if await GroupInfo.get_or_none(group_id=114514):
+        return
+    # 标识符，该功能只需执行一次
+    await GroupInfo.create(
+        group_id=114514,
+        group_name="114514",
+        max_member_count=114514,
+        member_count=114514,
+        group_flag=1,
+    )
+    group_list = await bot.get_group_list()
+    group_list = [g["group_id"] for g in group_list]
+    _gl = [x.group_id for x in await GroupInfo.all()]
+    if 114514 in _gl:
+        _gl.remove(114514)
+    for group_id in _gl:
+        if group_id in group_list:
+            if group := await GroupInfo.get_or_none(group_id=group_id):
+                group.group_flag = 1
+                await group.save(update_fields=["group_flag"])
             else:
-                await GroupInfo.filter(group_id=group_id).delete()
-                logger.info(f"移除不存在的群聊信息", group_id=group_id)
+                group_info = await bot.get_group_info(group_id=group_id)
+                await GroupInfo.create(
+                    group_id=group_info["group_id"],
+                    group_name=group_info["group_name"],
+                    max_member_count=group_info["max_member_count"],
+                    member_count=group_info["member_count"],
+                    group_flag=1,
+                )
+            logger.info("已添加群认证...", group_id=group_id)
+        else:
+            await GroupInfo.filter(group_id=group_id).delete()
+            logger.info("移除不存在的群聊信息", group_id=group_id)
 
 
 # async def __database_script(_flag: List[str]):

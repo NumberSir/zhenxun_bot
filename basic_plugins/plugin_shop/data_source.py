@@ -85,7 +85,7 @@ async def install_plugin(name: str) -> str:
             logger.info(f"成功安装插件 {name} 成功！\n{prompt}", "安装插件", target=name)
         return f"成功安装插件 {name}，请重启真寻！"
     except Exception as e:
-        logger.error(f"安装插失败", "安装插件", target=name, e=e)
+        logger.error("安装插失败", "安装插件", target=name, e=e)
         return f"安装插件 {name} 失败 {type(e)}：{e}"
 
 
@@ -105,7 +105,7 @@ async def uninstall_plugin(name: str) -> str:
         logger.info(f"插件 {name} 删除成功！")
         return f"插件 {name} 删除成功！"
     except Exception as e:
-        logger.error(f"删除插件失败", target=name, e=e)
+        logger.error("删除插件失败", target=name, e=e)
         return f"删除插件 {name} 失败 {type(e)}：{e}"
 
 
@@ -148,7 +148,7 @@ async def show_plugin_repo() -> Union[int, str]:
             f"-------------------"
         )
         img = await text2image(s, font_size=20, color="#f9f6f2")
-        w = w if w > img.w else img.w
+        w = max(w, img.w)
         h += img.h + line_height
         image_list.append(img)
     A = BuildImage(w + 50, h + 50, color="#f9f6f2")
@@ -183,7 +183,7 @@ async def download_json() -> int:
             shutil.rmtree(extract_path.absolute(), ignore_errors=True)
             return 200
     except Exception as e:
-        logger.error(f"下载插件库压缩包失败或解压失败", e=e)
+        logger.error("下载插件库压缩包失败或解压失败", e=e)
     return 999
 
 

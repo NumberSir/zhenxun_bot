@@ -10,7 +10,7 @@ from utils.message_builder import custom_forward_msg
 from .data_source import from_anime_get_info
 
 __zx_plugin_name__ = "搜番"
-__plugin_usage__ = f"""
+__plugin_usage__ = """
 usage：
     搜索动漫资源
     指令：

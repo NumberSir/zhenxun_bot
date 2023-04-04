@@ -74,7 +74,7 @@ def get_resource_type_list():
 
     mes = "当前资源列表如下：\n"
 
-    for resource_type in temp.keys():
+    for resource_type in temp:
         mes += f"{resource_type}：{'，'.join(temp[resource_type])}\n"
     return mes
 
@@ -96,11 +96,10 @@ async def init(flag: bool = False):
         await download_map_init(semaphore, flag)
         await download_resource_data(semaphore)
         await download_resource_type()
-        if not CENTER_POINT:
-            if resource_label_file.exists():
-                CENTER_POINT = json.load(
-                    open(resource_label_file, "r", encoding="utf8")
-                )["CENTER_POINT"]
+        if not CENTER_POINT and resource_label_file.exists():
+            CENTER_POINT = json.load(
+                open(resource_label_file, "r", encoding="utf8")
+            )["CENTER_POINT"]
         if resource_label_file.exists():
             with open(resource_type_file, "r", encoding="utf8") as f:
                 data = json.load(f)
@@ -215,13 +214,10 @@ async def download_resource_type():
             data = response.json()
             if data["message"] == "OK":
                 data = data["data"]["tree"]
-                resource_data = {}
-                for x in data:
-                    id_ = x["id"]
-                    resource_data[id_] = x
+                resource_data = {x["id"]: x for x in data}
                 with open(resource_type_file, "w", encoding="utf8") as f:
                     json.dump(resource_data, f, ensure_ascii=False, indent=4)
-                logger.info(f"更新原神资源类型成功...")
+                logger.info("更新原神资源类型成功...")
             else:
                 logger.warning(f'获取原神资源类型失败 msg: {data["message"]}')
         else:

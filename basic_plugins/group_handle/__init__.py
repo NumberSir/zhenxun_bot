@@ -74,23 +74,21 @@ async def _(bot: Bot, event: GroupIncreaseNoticeEvent):
             "invite_manager", "flag"
         ):
             try:
-                msg = Config.get_config("invite_manager", "message")
-                if msg:
+                if msg := Config.get_config("invite_manager", "message"):
                     await bot.send_group_msg(group_id=event.group_id, message=msg)
                 await bot.set_group_leave(group_id=event.group_id)
                 await bot.send_private_msg(
                     user_id=int(list(bot.config.superusers)[0]),
                     message=f"触发强制入群保护，已成功退出群聊 {event.group_id}...",
                 )
-                logger.info(f"强制拉群或未有群信息，退出群聊成功", "入群检测", group_id=event.group_id)
+                logger.info("强制拉群或未有群信息，退出群聊成功", "入群检测", group_id=event.group_id)
                 requests_manager.remove_request("group", event.group_id)
             except Exception as e:
-                logger.info(f"强制拉群或未有群信息，退出群聊失败", "入群检测", group_id=event.group_id, e=e)
+                logger.info("强制拉群或未有群信息，退出群聊失败", "入群检测", group_id=event.group_id, e=e)
                 await bot.send_private_msg(
                     user_id=int(list(bot.config.superusers)[0]),
                     message=f"触发强制入群保护，退出群聊 {event.group_id} 失败...",
                 )
-        # 默认群功能开关
         elif event.group_id not in group_manager.get_data().group_manager.keys():
             data = plugins2settings_manager.get_data()
             for plugin in data.keys():
@@ -128,7 +126,7 @@ async def _(bot: Bot, event: GroupIncreaseNoticeEvent):
                         user_info["user_id"], user_info["group_id"], 9
                     )
                     logger.debug(
-                        f"添加超级用户权限: 9",
+                        "添加超级用户权限: 9",
                         "入群检测",
                         user_info["user_id"],
                         user_info["group_id"],
@@ -167,7 +165,7 @@ async def _(bot: Bot, event: GroupIncreaseNoticeEvent):
                 msg = msg.strip() + img
                 msg = "\n" + msg if at_flag else msg
                 await group_increase_handle.send(
-                    "[[_task|group_welcome]]" + msg, at_sender=at_flag
+                    f"[[_task|group_welcome]]{msg}", at_sender=at_flag
                 )
             else:
                 await group_increase_handle.send(
@@ -226,7 +224,7 @@ async def _(bot: Bot, event: GroupDecreaseNoticeEvent):
         operator = await bot.get_group_member_info(
             user_id=event.operator_id, group_id=event.group_id
         )
-        operator_name = operator["card"] if operator["card"] else operator["nickname"]
+        operator_name = operator["card"] or operator["nickname"]
         rst = f"{user_name} 被 {operator_name} 送走了."
     try:
         await group_decrease_handle.send(f"[[_task|refund_group_remind]]{rst}")

@@ -24,26 +24,24 @@ def switch_rule(event: Event) -> bool:
             cmd = ["关闭全部被动", "开启全部被动", "开启全部功能", "关闭全部功能"]
             _data = group_manager.get_task_data()
             for key in _data:
-                cmd.append(f"开启{_data[key]}")
-                cmd.append(f"关闭{_data[key]}")
-                cmd.append(f"开启被动{_data[key]}")
-                cmd.append(f"关闭被动{_data[key]}")
-                cmd.append(f"开启 {_data[key]}")
-                cmd.append(f"关闭 {_data[key]}")
+                cmd.extend(
+                    (
+                        f"开启{_data[key]}",
+                        f"关闭{_data[key]}",
+                        f"开启被动{_data[key]}",
+                        f"关闭被动{_data[key]}",
+                        f"开启 {_data[key]}",
+                        f"关闭 {_data[key]}",
+                    )
+                )
             _data = plugins2settings_manager.get_data()
             for key in _data.keys():
                 try:
                     if isinstance(_data[key].cmd, list):
                         for x in _data[key].cmd:
-                            cmd.append(f"开启{x}")
-                            cmd.append(f"关闭{x}")
-                            cmd.append(f"开启 {x}")
-                            cmd.append(f"关闭 {x}")
+                            cmd.extend((f"开启{x}", f"关闭{x}", f"开启 {x}", f"关闭 {x}"))
                     else:
-                        cmd.append(f"开启{key}")
-                        cmd.append(f"关闭{key}")
-                        cmd.append(f"开启 {key}")
-                        cmd.append(f"关闭 {key}")
+                        cmd.extend((f"开启{key}", f"关闭{key}", f"开启 {key}", f"关闭 {key}"))
                 except KeyError:
                     pass
             v = time.time()
@@ -51,5 +49,5 @@ def switch_rule(event: Event) -> bool:
         msg = msg[0] if msg else ""
         return msg in cmd
     except Exception as e:
-        logger.error(f"检测是否为功能开关命令发生错误", e=e)
+        logger.error("检测是否为功能开关命令发生错误", e=e)
     return False

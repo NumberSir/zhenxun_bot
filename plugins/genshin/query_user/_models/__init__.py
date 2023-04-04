@@ -89,7 +89,7 @@ class Genshin(Model):
             return user.cookie
         for user in await cls.filter(cookie__not="").annotate(rand=Random()).all():
             if not user.today_query_uid or len(user.today_query_uid[:-1].split()) < 30:
-                user.today_query_uid = user.today_query_uid + f"{uid} "
+                user.today_query_uid = f"{user.today_query_uid}{uid} "
                 await user.save(update_fields=["today_query_uid"])
                 return user.cookie
         return None

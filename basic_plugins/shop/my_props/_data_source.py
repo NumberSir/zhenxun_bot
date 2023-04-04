@@ -80,7 +80,7 @@ async def _init_prop(
         :param _props: 道具列表
     """
     active_name = [x.goods_name for x in _props]
-    name_list = [x for x in props.keys() if x in active_name]
+    name_list = [x for x in props if x in active_name]
     if not name_list:
         return None
     temp_img = BuildImage(0, 0, font_size=20)
@@ -110,8 +110,8 @@ async def _init_prop(
     h = 0
     for img, num in zip(image_list, num_list):
         h += img.h
-        max_w = max_w if max_w > img.w else img.w
-        num_max_w = num_max_w if num_max_w > num.w else num.w
+        max_w = max(max_w, img.w)
+        num_max_w = max(num_max_w, num.w)
     A = BuildImage(max_w + num_max_w + 30, h, color="#f9f6f2")
     curr_h = 0
     for img, num in zip(image_list, num_list):

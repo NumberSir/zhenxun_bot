@@ -75,8 +75,7 @@ async def _():
 
 @shop_add_goods.handle()
 async def _(event: MessageEvent, arg: Message = CommandArg()):
-    msg = arg.extract_plain_text().strip()
-    if msg:
+    if msg := arg.extract_plain_text().strip():
         data = parse_goods_info(msg)
         if isinstance(data, str):
             await shop_add_goods.finish(data)
@@ -100,8 +99,7 @@ async def _(event: MessageEvent, arg: Message = CommandArg()):
 
 @shop_del_goods.handle()
 async def _(event: MessageEvent, arg: Message = CommandArg()):
-    msg = arg.extract_plain_text().strip()
-    if msg:
+    if msg := arg.extract_plain_text().strip():
         name = ""
         id_ = 0
         if is_number(msg):
@@ -113,16 +111,15 @@ async def _(event: MessageEvent, arg: Message = CommandArg()):
             await shop_del_goods.send(f"删除商品 {goods_name} 成功了...", at_sender=True)
             if os.path.exists(f"{IMAGE_PATH}/shop_help.png"):
                 os.remove(f"{IMAGE_PATH}/shop_help.png")
-            logger.info(f"删除商品成功", "删除商品", event.user_id, target=goods_name)
+            logger.info("删除商品成功", "删除商品", event.user_id, target=goods_name)
         else:
             await shop_del_goods.send(f"删除商品 {goods_name} 失败了...", at_sender=True)
-            logger.info(f"删除商品失败", "删除商品", event.user_id, target=goods_name)
+            logger.info("删除商品失败", "删除商品", event.user_id, target=goods_name)
 
 
 @shop_update_goods.handle()
 async def _(event: MessageEvent, arg: Message = CommandArg()):
-    msg = arg.extract_plain_text().strip()
-    if msg:
+    if msg := arg.extract_plain_text().strip():
         data = parse_goods_info(msg)
         if isinstance(data, str):
             await shop_add_goods.finish(data)
@@ -147,7 +144,7 @@ async def _():
         await GoodsInfo.all().update(daily_purchase_limit={})
         logger.info("商品每日限购次数重置成功...")
     except Exception as e:
-        logger.error(f"商品每日限购次数重置出错", e=e)
+        logger.error("商品每日限购次数重置出错", e=e)
 
 
 @scheduler.scheduled_job(
@@ -159,4 +156,4 @@ async def _():
     try:
         await BagUser.all().update(get_today_gold=0, spend_today_gold=0)
     except Exception as e:
-        logger.error(f"重置每日金币", "定时任务", e=e)
+        logger.error("重置每日金币", "定时任务", e=e)

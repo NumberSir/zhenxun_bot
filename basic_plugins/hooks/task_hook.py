@@ -37,12 +37,12 @@ async def _(bot: Bot, api: str, data: Dict[str, Any]):
                     )
                 )
             )
-            and r.group(1) in group_manager.get_task_data().keys()
+            and r[1] in group_manager.get_task_data().keys()
         ):
-            task = r.group(1)
+            task = r[1]
             group_id = data["group_id"]
     except Exception as e:
-        logger.error(f"TaskHook ERROR", "HOOK", e=e)
+        logger.error("TaskHook ERROR", "HOOK", e=e)
     else:
         if task and group_id:
             if group_manager.get_group_level(

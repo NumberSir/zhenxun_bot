@@ -41,7 +41,7 @@ except ModuleNotFoundError:
     import json
 
 __zx_plugin_name__ = "色图"
-__plugin_usage__ = f"""
+__plugin_usage__ = """
 usage：
     搜索 lolicon 图库，每日色图time...
     指令：
@@ -144,15 +144,14 @@ async def _(
     state: T_State,
 ):
     global setu_data_list
-    if isinstance(event, MessageEvent):
-        if matcher.plugin_name == "send_setu":
-            # 添加数据至数据库
-            try:
-                await add_data_to_database(setu_data_list)
-                logger.info("色图数据自动存储数据库成功...")
-                setu_data_list = []
-            except Exception:
-                pass
+    if isinstance(event, MessageEvent) and matcher.plugin_name == "send_setu":
+        # 添加数据至数据库
+        try:
+            await add_data_to_database(setu_data_list)
+            logger.info("色图数据自动存储数据库成功...")
+            setu_data_list = []
+        except Exception:
+            pass
 
 
 setu = on_command(
@@ -260,7 +259,13 @@ async def _(bot: Bot, event: MessageEvent, reg_group: Tuple[Any, ...] = RegexGro
             num = limit
             await setu.send(f"一次只能给你看 {num} 张哦")
         await send_setu_handle(
-            bot, setu_reg, event, "色图r" if r18 else "色图", tags + " " + tags2, num, r18
+            bot,
+            setu_reg,
+            event,
+            "色图r" if r18 else "色图",
+            f"{tags} {tags2}",
+            num,
+            r18,
         )
 
 

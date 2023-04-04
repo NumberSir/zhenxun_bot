@@ -45,10 +45,7 @@ async def _(event: MessageEvent, arg: Message = CommandArg()):
         msg = int(msg)
     uid = None
     user = await Genshin.get_or_none(user_qq=event.user_id)
-    if not msg and user:
-        uid = user.uid
-    else:
-        uid = msg
+    uid = user.uid if not msg and user else msg
     if not uid:  # or not await Genshin.get_user_cookie(uid):
         await query_role_info_matcher.finish("请先绑定uid和cookie！")
     nickname = event.sender.card or event.sender.nickname

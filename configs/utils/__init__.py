@@ -187,13 +187,12 @@ class ConfigsManager:
                             if config.type
                             else config.value
                         )
-                    else:
-                        if config.default_value is not None:
-                            value = (
-                                cattrs.structure(config.default_value, config.type)
-                                if config.type
-                                else config.default_value
-                            )
+                    elif config.default_value is not None:
+                        value = (
+                            cattrs.structure(config.default_value, config.type)
+                            if config.type
+                            else config.default_value
+                        )
                 except Exception as e:
                     logger.warning(
                         f"配置项类型转换 MODULE: [<u><y>{module}</y></u>] | KEY: [<u><y>{key}</y></u>]",
@@ -275,28 +274,29 @@ class ConfigsManager:
         Raises:
             ValueError: _description_
         """
-        if self.file.exists():
-            _yaml = YAML()
-            with open(self.file, "r", encoding="utf8") as f:
-                temp_data = _yaml.load(f)
-            if not temp_data:
-                self.file.unlink()
-                raise ValueError(
-                    "配置文件为空！\n"
-                    "***********************************************************\n"
-                    "****** 配置文件 plugins2config.yaml 为空，已删除，请重启 ******\n"
-                    "***********************************************************"
-                )
-            count = 0
-            for module in temp_data:
-                config_group = ConfigGroup(module=module)
-                for config in temp_data[module]:
-                    config_group.configs[config] = Config(**temp_data[module][config])
-                    count += 1
-                self._data[module] = config_group
-            logger.info(
-                f"加载配置完成，共加载 <u><y>{len(temp_data)}</y></u> 个配置组及对应 <u><y>{count}</y></u> 个配置项"
+        if not self.file.exists():
+            return
+        _yaml = YAML()
+        with open(self.file, "r", encoding="utf8") as f:
+            temp_data = _yaml.load(f)
+        if not temp_data:
+            self.file.unlink()
+            raise ValueError(
+                "配置文件为空！\n"
+                "***********************************************************\n"
+                "****** 配置文件 plugins2config.yaml 为空，已删除，请重启 ******\n"
+                "***********************************************************"
             )
+        count = 0
+        for module in temp_data:
+            config_group = ConfigGroup(module=module)
+            for config in temp_data[module]:
+                config_group.configs[config] = Config(**temp_data[module][config])
+                count += 1
+            self._data[module] = config_group
+        logger.info(
+            f"加载配置完成，共加载 <u><y>{len(temp_data)}</y></u> 个配置组及对应 <u><y>{count}</y></u> 个配置项"
+        )
 
     def get_admin_level_data(self):
         """

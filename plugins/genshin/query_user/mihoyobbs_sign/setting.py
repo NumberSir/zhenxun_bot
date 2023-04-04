@@ -87,29 +87,29 @@ headers = {
 # 通用设置
 bbs_Api = "https://bbs-api.mihoyo.com"
 web_Api = "https://api-takumi.mihoyo.com"
-account_Info_url = web_Api + "/binding/api/getUserGameRolesByCookie?game_biz="
+account_Info_url = f"{web_Api}/binding/api/getUserGameRolesByCookie?game_biz="
 
 # 米游社的API列表
 bbs_Cookie_url = "https://webapi.account.mihoyo.com/Api/cookie_accountinfo_by_loginticket?login_ticket={}"
 bbs_Cookie_url2 = web_Api + "/auth/api/getMultiTokenByLoginTicket?login_ticket={}&token_types=3&uid={}"
-bbs_Tasks_list = bbs_Api + "/apihub/sapi/getUserMissionsState"  # 获取任务列表
-bbs_Sign_url = bbs_Api + "/apihub/app/api/signIn"  # post
+bbs_Tasks_list = f"{bbs_Api}/apihub/sapi/getUserMissionsState"
+bbs_Sign_url = f"{bbs_Api}/apihub/app/api/signIn"
 bbs_List_url = bbs_Api + "/post/api/getForumPostList?forum_id={}&is_good=false&is_hot=false&page_size=20&sort_type=1"
 bbs_Detail_url = bbs_Api + "/post/api/getPostFull?post_id={}"
 bbs_Share_url = bbs_Api + "/apihub/api/getShareConf?entity_id={}&entity_type=1"
-bbs_Like_url = bbs_Api + "/apihub/sapi/upvotePost"  # post json
+bbs_Like_url = f"{bbs_Api}/apihub/sapi/upvotePost"
 
 # 崩坏2自动签到相关的相关设置
 honkai2_Act_id = "e202203291431091"
 honkai2_checkin_rewards = f'{web_Api}/event/luna/home?lang=zh-cn&act_id={honkai2_Act_id}'
 honkai2_Is_signurl = web_Api + "/event/luna/info?lang=zh-cn&act_id={}&region={}&uid={}"
-honkai2_Sign_url = web_Api + "/event/luna/sign"
+honkai2_Sign_url = f"{web_Api}/event/luna/sign"
 
 # 崩坏3自动签到相关的设置
 honkai3rd_Act_id = "e202207181446311"
 honkai3rd_checkin_rewards = f'{web_Api}/event/luna/home?lang=zh-cn&act_id={honkai3rd_Act_id}'
 honkai3rd_Is_signurl = web_Api + "/event/luna/info?lang=zh-cn&act_id={}&region={}&uid={}"
-honkai3rd_Sign_url = web_Api + "/event/luna/sign"
+honkai3rd_Sign_url = f"{web_Api}/event/luna/sign"
 
 # 未定事件簿自动签到相关设置
 tearsofthemis_Act_id = "e202202251749321"
@@ -121,4 +121,4 @@ tearsofthemis_Sign_url = honkai2_Sign_url  # 和二崩完全一致
 genshin_Act_id = "e202009291139501"
 genshin_checkin_rewards = f'{web_Api}/event/bbs_sign_reward/home?act_id={genshin_Act_id}'
 genshin_Is_signurl = web_Api + "/event/bbs_sign_reward/info?act_id={}&region={}&uid={}"
-genshin_Signurl = web_Api + "/event/bbs_sign_reward/sign"
+genshin_Signurl = f"{web_Api}/event/bbs_sign_reward/sign"

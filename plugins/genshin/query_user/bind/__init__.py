@@ -56,7 +56,7 @@ bbs_Cookie_url2 = (
 async def _(event: MessageEvent, cmd: str = OneCommand(), arg: Message = CommandArg()):
     msg = arg.extract_plain_text().strip()
     user = await Genshin.get_or_none(user_qq=event.user_id)
-    if cmd in ["原神绑定uid", "原神绑定米游社id"]:
+    if cmd in {"原神绑定uid", "原神绑定米游社id"}:
         if not is_number(msg):
             await bind.finish("uid/id必须为纯数字！", at_senders=True)
         msg = int(msg)
@@ -111,13 +111,10 @@ async def _(event: MessageEvent, cmd: str = OneCommand(), arg: Message = Command
             res = await AsyncHttpx.get(url=bbs_Cookie_url2.format(login_ticket, stuid))
             res.encoding = "utf-8"
             data = json.loads(res.text)
-            stoken = data["data"]["list"][0]["token"]
-            # await Genshin.set_cookie(uid, cookie)
-            user.stoken = stoken
             user.stuid = stuid
+            stoken = data["data"]["list"][0]["token"]
+            user.stoken = stoken
             user.login_ticket = login_ticket
-        # except Exception as e:
-        #     await bind.finish("获取登陆信息失败，请检查cookie是否正确或更新cookie")
         elif data["data"]["msg"] == "登录信息已失效，请重新登录":
             await bind.finish("登录信息失效，请重新获取最新cookie进行绑定")
         _x = f"已成功为uid：{user.uid} 设置cookie"

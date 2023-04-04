@@ -55,32 +55,33 @@ poke_ = on_notice(priority=5, block=False)
 
 @poke_.handle()
 async def _poke_event(event: PokeNotifyEvent):
-    if event.self_id == event.target_id:
-        _clmt.add(event.user_id)
-        if _clmt.check(event.user_id) or random.random() < 0.3:
-            rst = ""
-            if random.random() < 0.15:
-                await BanUser.ban(event.user_id, 1, 60)
-                rst = "气死我了！"
-            await poke_.finish(rst + random.choice(poke__reply), at_sender=True)
-        rand = random.random()
-        path = random.choice(["luoli", "meitu"])
-        if rand <= 0.3 and len(os.listdir(IMAGE_PATH / "image_management" / path)) > 0:
-            index = random.randint(
-                0, len(os.listdir(IMAGE_PATH / "image_management" / path)) - 1
-            )
-            result = f"id：{index}" + image(
-                IMAGE_PATH / "image_management" / path / f"{index}.jpg"
-            )
-            await poke_.send(result)
-            logger.info(f"USER {event.user_id} 戳了戳我 回复: {result}  {result}")
-        elif 0.3 < rand < 0.6:
-            voice = random.choice(os.listdir(RECORD_PATH / "dinggong"))
-            result = record(RECORD_PATH / "dinggong" / voice)
-            await poke_.send(result)
-            await poke_.send(voice.split("_")[1])
-            logger.info(
-                f'USER {event.user_id} 戳了戳我 回复: {result} \n {voice.split("_")[1]}'
-            )
-        else:
-            await poke_.send(poke(event.user_id))
+    if event.self_id != event.target_id:
+        return
+    _clmt.add(event.user_id)
+    if _clmt.check(event.user_id) or random.random() < 0.3:
+        rst = ""
+        if random.random() < 0.15:
+            await BanUser.ban(event.user_id, 1, 60)
+            rst = "气死我了！"
+        await poke_.finish(rst + random.choice(poke__reply), at_sender=True)
+    rand = random.random()
+    path = random.choice(["luoli", "meitu"])
+    if rand <= 0.3 and len(os.listdir(IMAGE_PATH / "image_management" / path)) > 0:
+        index = random.randint(
+            0, len(os.listdir(IMAGE_PATH / "image_management" / path)) - 1
+        )
+        result = f"id：{index}" + image(
+            IMAGE_PATH / "image_management" / path / f"{index}.jpg"
+        )
+        await poke_.send(result)
+        logger.info(f"USER {event.user_id} 戳了戳我 回复: {result}  {result}")
+    elif 0.3 < rand < 0.6:
+        voice = random.choice(os.listdir(RECORD_PATH / "dinggong"))
+        result = record(RECORD_PATH / "dinggong" / voice)
+        await poke_.send(result)
+        await poke_.send(voice.split("_")[1])
+        logger.info(
+            f'USER {event.user_id} 戳了戳我 回复: {result} \n {voice.split("_")[1]}'
+        )
+    else:
+        await poke_.send(poke(event.user_id))

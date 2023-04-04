@@ -49,11 +49,11 @@ class ChatHistory(Model):
             query = query.filter(create_time__range=date_scope)
         return list(
             await query.annotate(count=Count("user_qq"))
-            .order_by(o + "count")
+            .order_by(f"{o}count")
             .group_by("user_qq")
             .limit(limit)
             .values_list("user_qq", "count")
-        )  # type: ignore
+        )
 
     @classmethod
     async def get_group_first_msg_datetime(cls, group_id: int) -> Optional[datetime]:

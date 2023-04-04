@@ -56,7 +56,7 @@ class BlackWord(Model):
                 .order_by("id")
                 .first()
             )
-        elif id_:
+        else:
             user_list = await cls.filter(user_qq=user_qq).order_by("id").all()
             if len(user_list) == 0 or (id_ < 0 or id_ > len(user_list)):
                 return False

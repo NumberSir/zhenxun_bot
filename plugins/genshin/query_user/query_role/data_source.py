@@ -20,7 +20,7 @@ async def query_role_data(
     user_id: int, uid: int, mys_id: Optional[str] = None, nickname: Optional[str] = None
 ) -> Optional[Union[MessageSegment, str]]:
     uid = str(uid)
-    if uid[0] == "1" or uid[0] == "2":
+    if uid[0] in ["1", "2"]:
         server_id = "cn_gf01"
     elif uid[0] == "5":
         server_id = "cn_qd01"
@@ -121,9 +121,6 @@ async def get_info(uid_: str, server_id: str) -> Tuple[Optional[Union[dict, str]
     if data["message"] == "OK":
         return data["data"], 200
     return data["message"], 999
-    # except Exception as e:
-    #     logger.error(f"访问失败，请重试！ {type(e)}: {e}")
-    return None, -1
 
 
 async def get_character(
@@ -155,11 +152,7 @@ async def get_character(
         json={"character_ids": character_ids, "role_id": uid, "server": server_id},
     )
     data = req.json()
-    if data["message"] == "OK":
-        return data["data"]
-    # except Exception as e:
-    #     logger.error(f"访问失败，请重试！ {type(e)}: {e}")
-    return None
+    return data["data"] if data["message"] == "OK" else None
 
 
 def parsed_data(

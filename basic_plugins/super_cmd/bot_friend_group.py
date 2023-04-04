@@ -65,7 +65,7 @@ async def _(bot: Bot):
     gl = await bot.get_group_list()
     msg = ["{group_id} {group_name}".format_map(g) for g in gl]
     msg = "\n".join(msg)
-    msg = f"bot:{bot.self_id}\n| 群号 | 群名 | 共{len(gl)}个群\n" + msg
+    msg = f"bot:{bot.self_id}\n| 群号 | 群名 | 共{len(gl)}个群\n{msg}"
     await cls_group.send(msg)
 
 
@@ -74,7 +74,7 @@ async def _(bot: Bot):
     gl = await bot.get_friend_list()
     msg = ["{user_id} {nickname}".format_map(g) for g in gl]
     msg = "\n".join(msg)
-    msg = f"| QQ号 | 昵称 | 共{len(gl)}个好友\n" + msg
+    msg = f"| QQ号 | 昵称 | 共{len(gl)}个好友\n{msg}"
     await cls_friend.send(msg)
 
 
@@ -83,7 +83,7 @@ async def _(bot: Bot, cmd: str = OneCommand(), arg: Message = CommandArg()):
     id_ = arg.extract_plain_text().strip()
     if is_number(id_):
         id_ = int(id_)
-        if cmd[:2] == "同意":
+        if cmd.startswith("同意"):
             flag = await requests_manager.approve(bot, id_, "private")
         else:
             flag = await requests_manager.refused(bot, id_, "private")
@@ -106,9 +106,8 @@ async def _(
     flag = None
     if is_number(id_):
         id_ = int(id_)
-        if cmd[:2] == "同意":
-            rid = requests_manager.get_group_id(id_)
-            if rid:
+        if cmd.startswith("同意"):
+            if rid := requests_manager.get_group_id(id_):
                 if group := await GroupInfo.get_or_none(group_id=rid):
                     group.group_flag = 1
                     await group.save(update_fields=["group_flag"])

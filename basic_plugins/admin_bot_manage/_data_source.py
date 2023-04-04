@@ -53,8 +53,8 @@ async def group_current_status(group_id: int) -> str:
         await bk.atext((name_image.w + 100, 10), "全局")
         await bk.apaste(b_icon, (name_image.w + 130, 0), True)
         image_list.append(bk)
-    w = max([x.w for x in image_list])
-    h = sum([x.h + 10 for x in image_list])
+    w = max(x.w for x in image_list)
+    h = sum(x.h + 10 for x in image_list)
     A = BuildImage(w + 20, h + 70, font_size=30, color=(119, 97, 177))
     await A.atext((15, 20), "群被动状态")
     curr_h = 75
@@ -93,7 +93,7 @@ async def custom_group_welcome(
             pass
     try:
         if msg:
-            data[str(group_id)] = str(msg)
+            data[str(group_id)] = msg
             json.dump(
                 data, open(custom_welcome_msg_json, "w"), indent=4, ensure_ascii=False
             )
@@ -102,11 +102,11 @@ async def custom_group_welcome(
         if img:
             await AsyncHttpx.download_file(img, msg_image)
             img_result = image(msg_image)
-            logger.info(f"更换群欢迎消息图片", "更换群欢迎信息", user_id, group_id)
+            logger.info("更换群欢迎消息图片", "更换群欢迎信息", user_id, group_id)
     except Exception as e:
-        logger.error(f"替换群消息失败", "更换群欢迎信息", user_id, group_id, e=e)
+        logger.error("替换群消息失败", "更换群欢迎信息", user_id, group_id, e=e)
         return "替换群消息失败..."
-    return f"替换群欢迎消息成功：\n{result}" + img_result
+    return f"替换群欢迎消息成功：\n{result}{img_result}"
 
 
 task_data = None
@@ -257,7 +257,7 @@ def _get_plugin_status() -> MessageSegment:
     for matcher in get_matchers(True):
         if module := matcher.plugin_name:
             flag = plugins_manager.get_plugin_block_type(module)
-            flag = flag.upper() + " CLOSE" if flag else "OPEN"
+            flag = f"{flag.upper()} CLOSE" if flag else "OPEN"
             try:
                 plugin_name = plugins_manager.get(module).plugin_name
                 if (
@@ -295,7 +295,6 @@ async def update_member_info(
         :param remind_superuser: 失败信息提醒超级用户
     """
     _group_user_list = await bot.get_group_member_list(group_id=group_id)
-    _error_member_list = []
     _exist_member_list = []
     # try:
     admin_default_auth = Config.get_config("admin_bot_manage", "ADMIN_DEFAULT_AUTH")
@@ -324,7 +323,7 @@ async def update_member_info(
                     user.user_name = nickname
                     await user.save(update_fields=["user_name"])
                     logger.debug(
-                        f"更新群昵称成功",
+                        "更新群昵称成功",
                         "更新群组成员信息",
                         user_info["user_id"],
                         user_info["group_id"],
@@ -357,11 +356,10 @@ async def update_member_info(
         if _del_member_list:
             for del_user in _del_member_list:
                 await GroupInfoUser.filter(user_qq=del_user, group_id=group_id).delete()
-                logger.info(f"删除已退群用户", "更新群组成员信息", del_user, group_id)
+                logger.info("删除已退群用户", "更新群组成员信息", del_user, group_id)
+        _error_member_list = []
         if _error_member_list and remind_superuser:
-            result = ""
-            for error_user in _error_member_list:
-                result += error_user
+            result = "".join(_error_member_list)
             await bot.send_private_msg(
                 user_id=int(list(bot.config.superusers)[0]), message=result[:-1]
             )

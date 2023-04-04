@@ -39,34 +39,32 @@ async def _(matcher: Matcher, bot: Bot, event: GroupMessageEvent, state: T_State
     if not malicious_ban_time:
         raise ValueError("模块: [hook], 配置项: [MALICIOUS_BAN_TIME] 为空或小于0")
     if matcher.type == "message" and matcher.priority not in [1, 999]:
-        if state["_prefix"]["raw_command"]:
-            if _blmt.check(f'{event.user_id}{state["_prefix"]["raw_command"]}'):
-                await BanUser.ban(
-                    event.user_id,
-                    9,
-                    malicious_ban_time * 60,
-                )
-                logger.info(
-                    f"触发了恶意触发检测: {matcher.plugin_name}", "HOOK", user_id, group_id
-                )
+        if state["_prefix"]["raw_command"] and _blmt.check(
+            f'{event.user_id}{state["_prefix"]["raw_command"]}'
+        ):
+            await BanUser.ban(
+                event.user_id,
+                9,
+                malicious_ban_time * 60,
+            )
+            logger.info(
+                f"触发了恶意触发检测: {matcher.plugin_name}", "HOOK", user_id, group_id
+            )
+            try:
                 if isinstance(event, GroupMessageEvent):
-                    try:
-                        await bot.send_group_msg(
-                            group_id=event.group_id,
-                            message=at(event.user_id) + "检测到恶意触发命令，您将被封禁 30 分钟",
-                        )
-                    except ActionFailed:
-                        pass
+                    await bot.send_group_msg(
+                        group_id=event.group_id,
+                        message=f"{at(event.user_id)}检测到恶意触发命令，您将被封禁 30 分钟",
+                    )
                 else:
-                    try:
-                        await bot.send_private_msg(
-                            user_id=event.user_id,
-                            message=at(event.user_id) + "检测到恶意触发命令，您将被封禁 30 分钟",
-                        )
-                    except ActionFailed:
-                        pass
-                logger.debug(
-                    f"触发了恶意触发检测: {matcher.plugin_name}", "HOOK", user_id, group_id
-                )
-                raise IgnoredException("检测到恶意触发命令")
+                    await bot.send_private_msg(
+                        user_id=event.user_id,
+                        message=f"{at(event.user_id)}检测到恶意触发命令，您将被封禁 30 分钟",
+                    )
+            except ActionFailed:
+                pass
+            logger.debug(
+                f"触发了恶意触发检测: {matcher.plugin_name}", "HOOK", user_id, group_id
+            )
+            raise IgnoredException("检测到恶意触发命令")
         _blmt.add(f'{event.user_id}{state["_prefix"]["raw_command"]}')

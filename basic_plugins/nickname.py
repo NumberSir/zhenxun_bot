@@ -117,9 +117,8 @@ async def _(
     (msg,) = reg_group
     if isinstance(event, GroupMessageEvent):
         await GroupInfoUser.set_user_nickname(event.user_id, event.group_id, msg)
-        if len(msg) < 5:
-            if random.random() < 0.3:
-                msg = "~".join(msg)
+        if len(msg) < 5 and random.random() < 0.3:
+            msg = "~".join(msg)
         await nickname.send(
             random.choice(
                 [

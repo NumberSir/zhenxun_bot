@@ -44,9 +44,7 @@ async def _(
     img_list: List[str] = ImageList(),
 ):
     msg = arg.extract_plain_text().strip()
-    rst = ""
-    for img in img_list:
-        rst += image(img)
+    rst = "".join(image(img) for img in img_list)
     gl = [
         g["group_id"]
         for g in await bot.get_group_list()
@@ -63,11 +61,11 @@ async def _(
             x += 0.25
         try:
             await bot.send_group_msg(group_id=g, message=msg + rst)
-            logger.info(f"投递广播成功", "广播", group_id=g)
+            logger.info("投递广播成功", "广播", group_id=g)
         except Exception as e:
-            logger.error(f"投递广播失败", "广播", group_id=g, e=e)
+            logger.error("投递广播失败", "广播", group_id=g, e=e)
             error += f"GROUP {g} 投递广播失败：{type(e)}\n"
         await asyncio.sleep(0.5)
-    await broadcast.send(f"已播报至 100% 的群聊")
+    await broadcast.send("已播报至 100% 的群聊")
     if error:
         await broadcast.send(f"播报时错误：{error}")

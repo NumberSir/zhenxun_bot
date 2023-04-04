@@ -170,27 +170,24 @@ async def _(
         isinstance(event, MessageEvent)
         and event.is_tome()
         and not msg.startswith("原神绑定")
+    ) and (
+        event.is_tome()
+        and matcher.plugin_name == "black_word"
+        and not await BanUser.is_ban(event.user_id)
     ):
-        # if str(event.user_id) not in bot.config.superusers:
-        #     return logger.debug(f"超级用户跳过黑名单词汇检查 Message: {msg}", target=event.user_id)
+        # 屏蔽群权限-1的群
         if (
-            event.is_tome()
-            and matcher.plugin_name == "black_word"
-            and not await BanUser.is_ban(event.user_id)
+            isinstance(event, GroupMessageEvent)
+            and group_manager.get_group_level(event.group_id) < 0
         ):
-            # 屏蔽群权限-1的群
-            if (
-                isinstance(event, GroupMessageEvent)
-                and group_manager.get_group_level(event.group_id) < 0
-            ):
-                return
-            user_id = event.user_id
-            group_id = event.group_id if isinstance(event, GroupMessageEvent) else None
-            msg = get_message_text(event.json())
-            if await black_word_manager.check(
-                user_id, group_id, msg
-            ) and Config.get_config("black_word", "CONTAIN_BLACK_STOP_PROPAGATION"):
-                matcher.stop_propagation()
+            return
+        user_id = event.user_id
+        group_id = event.group_id if isinstance(event, GroupMessageEvent) else None
+        msg = get_message_text(event.json())
+        if await black_word_manager.check(
+            user_id, group_id, msg
+        ) and Config.get_config("black_word", "CONTAIN_BLACK_STOP_PROPAGATION"):
+            matcher.stop_propagation()
 
 
 @show_black.handle()
@@ -247,7 +244,7 @@ async def _():
     """.strip()
     max_width = 0
     for m in text.split("\n"):
-        max_width = len(m) * 20 if len(m) * 20 > max_width else max_width
+        max_width = max(len(m) * 20, max_width)
     max_height = len(text.split("\n")) * 24
     A = BuildImage(
         max_width, max_height, font="CJGaoDeGuo.otf", font_size=24, color="#E3DBD1"

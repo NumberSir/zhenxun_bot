@@ -22,27 +22,26 @@ async def genshin_sign(uid: int) -> Optional[str]:
     if not data:
         return "签到失败..."
     status = data["message"]
-    if status == "OK":
-        try:
-            sign_info = await _get_sign_info(uid)
-            if sign_info:
-                sign_info = sign_info["data"]
-                sign_list = await get_sign_reward_list()
-                get_reward = sign_list["data"]["awards"][
-                    int(sign_info["total_sign_day"]) - 1
-                ]["name"]
-                reward_num = sign_list["data"]["awards"][
-                    int(sign_info["total_sign_day"]) - 1
-                ]["cnt"]
-                get_im = f"本次签到获得：{get_reward}x{reward_num}"
-                logger.info("get_im:" + get_im + "\nsign_info:" + str(sign_info))
-                if status == "OK" and sign_info["is_sign"]:
-                    return f"原神签到成功！\n{get_im}\n本月漏签次数：{sign_info['sign_cnt_missed']}"
-        except Exception as e:
-            logger.error(f"原神签到发生错误 UID：{str(data)}")
-            return f"原神签到发生错误: {str(data)}"
-    else:
+    if status != "OK":
         return status
+    try:
+        sign_info = await _get_sign_info(uid)
+        if sign_info:
+            sign_info = sign_info["data"]
+            sign_list = await get_sign_reward_list()
+            get_reward = sign_list["data"]["awards"][
+                int(sign_info["total_sign_day"]) - 1
+            ]["name"]
+            reward_num = sign_list["data"]["awards"][
+                int(sign_info["total_sign_day"]) - 1
+            ]["cnt"]
+            get_im = f"本次签到获得：{get_reward}x{reward_num}"
+            logger.info(f"get_im:{get_im}" + "\nsign_info:" + str(sign_info))
+            if sign_info["is_sign"]:
+                return f"原神签到成功！\n{get_im}\n本月漏签次数：{sign_info['sign_cnt_missed']}"
+    except Exception as e:
+        logger.error(f"原神签到发生错误 UID：{str(data)}")
+        return f"原神签到发生错误: {str(data)}"
     if data["data"]["risk_code"] == 375:
         return "原神签到失败\n账号可能被风控，请前往米游社手动签到！"
     return str(data)
@@ -50,13 +49,10 @@ async def genshin_sign(uid: int) -> Optional[str]:
 
 # 获取请求Header里的DS 当web为true则生成网页端的DS
 def get_ds(web: bool) -> str:
-    if web:
-        n = mihoyobbs_Salt_web
-    else:
-        n = mihoyobbs_Salt
+    n = mihoyobbs_Salt_web if web else mihoyobbs_Salt
     i = str(timestamp())
     r = random_text(6)
-    c = md5("salt=" + n + "&t=" + i + "&r=" + r)
+    c = md5(f"salt={n}&t={i}&r={r}")
     return f"{i},{r},{c}"
 
 

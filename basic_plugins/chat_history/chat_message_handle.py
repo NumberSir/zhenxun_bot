@@ -89,7 +89,7 @@ async def _(event: GroupMessageEvent, reg_group: Tuple[Any, ...] = RegexGroup())
         else:
             date_str = f"日期：{date_scope[0].replace(microsecond=0)} - {date_scope[1].replace(microsecond=0)}"
         date_w = BuildImage(0, 0, font_size=15).getsize(date_str)[0]
-        img_w = date_w if date_w > name_img.w + num_img.w else name_img.w + num_img.w
+        img_w = max(date_w, name_img.w + num_img.w)
         A = BuildImage(
             img_w + 15,
             num_img.h + 30,

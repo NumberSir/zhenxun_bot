@@ -92,13 +92,11 @@ festive_redbag_data = {}
 async def _(matcher: Matcher, event: PokeNotifyEvent, ):
     try:
         if matcher.type == "notice" and event.self_id == event.target_id:
-            flag = check_on_gold_red(event)
-            if flag:
+            if flag := check_on_gold_red(event):
                 if matcher.plugin_name == "poke":
                     raise IgnoredException("目前正在抢红包...")
-            else:
-                if matcher.plugin_name == "gold_redbag":
-                    raise IgnoredException("目前没有红包...")
+            elif matcher.plugin_name == "gold_redbag":
+                raise IgnoredException("目前没有红包...")
     except AttributeError:
         pass
 
@@ -171,15 +169,14 @@ async def _(bot: Bot, event: GroupMessageEvent, arg: Message = CommandArg()):
 async def _(event: GroupMessageEvent, arg: Message = CommandArg()):
     global redbag_data, festive_redbag_data
     msg = arg.extract_plain_text().strip()
-    msg = (
+    if msg := (
         msg.replace("!", "")
-            .replace("！", "")
-            .replace(",", "")
-            .replace("，", "")
-            .replace(".", "")
-            .replace("。", "")
-    )
-    if msg:
+        .replace("！", "")
+        .replace(",", "")
+        .replace("，", "")
+        .replace(".", "")
+        .replace("。", "")
+    ):
         if "红包" not in msg:
             return
     try:
@@ -195,13 +192,13 @@ async def _(event: GroupMessageEvent, arg: Message = CommandArg()):
 async def _poke_(event: PokeNotifyEvent):
     global redbag_data, festive_redbag_data
     if event.self_id == event.target_id:
-        flag = check_on_gold_red(event)
-        if not flag:
+        if flag := check_on_gold_red(event):
+            await poke_.send(
+                image(b64=await get_redbag_img(event.user_id, event.group_id)),
+                at_sender=True,
+            )
+        else:
             return
-        await poke_.send(
-            image(b64=await get_redbag_img(event.user_id, event.group_id)),
-            at_sender=True,
-        )
 
 
 @return_.handle()
@@ -240,8 +237,7 @@ async def _(event: GroupMessageEvent):
 @festive_redbag.handle()
 async def _(bot: Bot, arg: Message = CommandArg()):
     global redbag_data
-    msg = arg.extract_plain_text().strip()
-    if msg:
+    if msg := arg.extract_plain_text().strip():
         msg = msg.split()
         amount = 0
         num = 0
@@ -285,14 +281,10 @@ async def _(bot: Bot, arg: Message = CommandArg()):
             try:
                 await bot.send_group_msg(
                     group_id=g,
-                    message=f"{NICKNAME}发起了金币红包\n金额：{amount}\n数量：{num}\n"
-                            + image(
-                        b64=await generate_send_redbag_pic(int(bot.self_id), greetings)
-                    ),
+                    message=f"{NICKNAME}发起了金币红包\n金额：{amount}\n数量：{num}\n{image(b64=await generate_send_redbag_pic(int(bot.self_id), greetings))}",
                 )
             except ActionFailed:
                 logger.warning(f"节日红包 GROUP {g} 发送失败..")
-                pass
 
 
 # 红包数据初始化
@@ -389,21 +381,18 @@ def check_on_gold_red(event) -> bool:
     flag1 = True
     flag2 = True
     try:
-        if festive_redbag_data[event.group_id]["user_id"]:
-            if (
-                    event.user_id
-                    in festive_redbag_data[event.group_id]["open_user"]
-            ):
-                flag1 = False
+        if festive_redbag_data[event.group_id]["user_id"] and (
+            event.user_id in festive_redbag_data[event.group_id]["open_user"]
+        ):
+            flag1 = False
     except KeyError:
         flag1 = False
     try:
-        if redbag_data[event.group_id]["user_id"]:
-            if event.user_id in redbag_data[event.group_id]["open_user"]:
-                flag2 = False
+        if (
+            redbag_data[event.group_id]["user_id"]
+            and event.user_id in redbag_data[event.group_id]["open_user"]
+        ):
+            flag2 = False
     except KeyError:
         flag2 = False
-    if flag1 or flag2:
-        return True
-    else:
-        return False
+    return flag1 or flag2

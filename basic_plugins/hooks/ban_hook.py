@@ -33,21 +33,18 @@ async def _(matcher: Matcher, bot: Bot, event: Event, state: T_State):
             await BanUser.is_super_ban(user_id)
             and str(user_id) not in bot.config.superusers
         ):
-            logger.debug(f"用户处于超级黑名单中...", "HOOK", user_id, group_id)
+            logger.debug("用户处于超级黑名单中...", "HOOK", user_id, group_id)
             raise IgnoredException("用户处于超级黑名单中")
         if await BanUser.is_ban(user_id) and str(user_id) not in bot.config.superusers:
             time = await BanUser.check_ban_time(user_id)
             if isinstance(time, int):
                 time = abs(int(time))
-                if time < 60:
-                    time = str(time) + " 秒"
-                else:
-                    time = str(int(time / 60)) + " 分钟"
+                time = f"{str(time)} 秒" if time < 60 else f"{int(time / 60)} 分钟"
             else:
-                time = str(time) + " 分钟"
+                time = f"{str(time)} 分钟"
             if isinstance(event, GroupMessageEvent):
                 if not static_flmt.check(user_id):
-                    logger.debug(f"用户处于黑名单中...", "HOOK", user_id, group_id)
+                    logger.debug("用户处于黑名单中...", "HOOK", user_id, group_id)
                     raise IgnoredException("用户处于黑名单中")
                 static_flmt.start_cd(user_id)
                 if matcher.priority != 999:
@@ -69,7 +66,7 @@ async def _(matcher: Matcher, bot: Bot, event: Event, state: T_State):
                         pass
             else:
                 if not static_flmt.check(user_id):
-                    logger.debug(f"用户处于黑名单中...", "HOOK", user_id, group_id)
+                    logger.debug("用户处于黑名单中...", "HOOK", user_id, group_id)
                     raise IgnoredException("用户处于黑名单中")
                 static_flmt.start_cd(user_id)
                 if matcher.priority != 999:
@@ -79,5 +76,5 @@ async def _(matcher: Matcher, bot: Bot, event: Event, state: T_State):
                             user_id=user_id,
                             message=at(user_id) + ban_result + f" 在..在 {time}后才会理你喔",
                         )
-            logger.debug(f"用户处于黑名单中...", "HOOK", user_id, group_id)
+            logger.debug("用户处于黑名单中...", "HOOK", user_id, group_id)
             raise IgnoredException("用户处于黑名单中")

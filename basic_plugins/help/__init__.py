@@ -50,15 +50,14 @@ async def _(bot: Bot, event: MessageEvent, arg: Message = CommandArg()):
         logger.info(
             f"查看帮助详情: {msg}", "帮助", event.user_id, getattr(event, "group_id", None)
         )
+    elif isinstance(event, GroupMessageEvent):
+        _image_path = GROUP_HELP_PATH / f"{event.group_id}.png"
+        if not _image_path.exists():
+            await create_help_img(event.group_id)
+        await simple_help.send(image(_image_path))
     else:
-        if isinstance(event, GroupMessageEvent):
-            _image_path = GROUP_HELP_PATH / f"{event.group_id}.png"
-            if not _image_path.exists():
-                await create_help_img(event.group_id)
-            await simple_help.send(image(_image_path))
-        else:
-            if not simple_help_image.exists():
-                if simple_help_image.exists():
-                    simple_help_image.unlink()
-                await create_help_img(None)
-            await simple_help.finish(image("simple_help.png"))
+        if not simple_help_image.exists():
+            if simple_help_image.exists():
+                simple_help_image.unlink()
+            await create_help_img(None)
+        await simple_help.finish(image("simple_help.png"))

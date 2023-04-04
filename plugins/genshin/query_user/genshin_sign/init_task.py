@@ -107,18 +107,16 @@ async def _sign(user_id: int, uid: int, count: int):
     else:
         msg = "今日原神自动签到重试次数已达到3次，请手动签到。"
         logger.debug(f"USER：{user_id} UID：{uid} 原神今日签到失败次数打到 3 次...")
-    bot = get_bot()
-    if bot:
+    if bot := get_bot():
         if user_id in [x["user_id"] for x in await bot.get_friend_list()]:
             await bot.send_private_msg(user_id=user_id, message=return_data)
             await bot.send_private_msg(user_id=user_id, message=msg)
-        else:
-            if user := await Genshin.get_or_none(uid=uid):
-                group_id = user.bind_group
-                if not group_id:
-                    if group_list := await GroupInfoUser.get_user_all_group(user_id):
-                        group_id = group_list[0]
-                if group_id:
-                    await bot.send_group_msg(
-                        group_id=group_id, message=at(user_id) + msg
-                    )
+        elif user := await Genshin.get_or_none(uid=uid):
+            group_id = user.bind_group
+            if not group_id:
+                if group_list := await GroupInfoUser.get_user_all_group(user_id):
+                    group_id = group_list[0]
+            if group_id:
+                await bot.send_group_msg(
+                    group_id=group_id, message=at(user_id) + msg
+                )

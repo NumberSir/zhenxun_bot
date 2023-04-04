@@ -12,12 +12,10 @@ async def search_song(song_name: str):
     :param song_name: 歌名
     """
     r = await AsyncHttpx.post(
-        f"http://music.163.com/api/search/get/",
+        "http://music.163.com/api/search/get/",
         data={"s": song_name, "limit": 1, "type": 1, "offset": 0},
     )
-    if r.status_code != 200:
-        return None
-    return json.loads(r.text)
+    return None if r.status_code != 200 else json.loads(r.text)
 
 
 async def get_song_id(song_name: str) -> int:
@@ -36,6 +34,4 @@ async def get_song_info(songId: int):
     r = await AsyncHttpx.post(
         f"http://music.163.com/api/song/detail/?id={songId}&ids=%5B{songId}%5D",
     )
-    if r.status_code != 200:
-        return None
-    return json.loads(r.text)
+    return None if r.status_code != 200 else json.loads(r.text)

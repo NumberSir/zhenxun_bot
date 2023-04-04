@@ -164,7 +164,7 @@ async def update_skin_data(name: str, is_update_case_name: bool = False) -> str:
                 create_time=now,
             )
         )
-        name_ = skin.name + "-" + skin.skin_name + "-" + skin.abrasion
+        name_ = f"{skin.name}-{skin.skin_name}-{skin.abrasion}"
         for c_name_ in skin.case_name.split(","):
             file_path = BASE_PATH / cn2py(c_name_) / f"{cn2py(name_)}.jpg"
             if not file_path.exists():
@@ -288,9 +288,9 @@ async def search_skin_page(
     if response.status_code == 200:
         # logger.debug(f"访问BUFF API: {response.text}", "开箱更新")
         json_data = response.json()
-        update_data = []
         if json_data["code"] == "OK":
             data_list = json_data["data"]["items"]
+            update_data = []
             for data in data_list:
                 obj = {}
                 if type_ == UpdateType.CASE:
@@ -414,9 +414,6 @@ async def build_case_image(case_name: str) -> Union[BuildImage, str]:
             if w + image.w - 25 > A.w:
                 h += image.h + 10
                 w = 25
-        if h + img_h + 100 < A.h:
-            await A.acrop((0, 0, A.w, h + img_h + 100))
-        return A
     else:
         log_list = (
             await BuffSkinLog.filter(color="CASE")
@@ -456,9 +453,10 @@ async def build_case_image(case_name: str) -> Union[BuildImage, str]:
             if w + image.w - 25 > A.w:
                 h += image.h + 10
                 w = 25
-        if h + img_h + 100 < A.h:
-            await A.acrop((0, 0, A.w, h + img_h + 100))
-        return A
+
+    if h + img_h + 100 < A.h:
+        await A.acrop((0, 0, A.w, h + img_h + 100))
+    return A
 
 
 def get_bk_image_size(
@@ -530,18 +528,16 @@ async def get_skin_case(id_: str) -> Optional[List[str]]:
     if response.status_code == 200:
         text = response.text
         if r := re.search('<meta name="description"(.*?)>', text):
-            case_list = []
-            for s in r.group(1).split(","):
-                if "武器箱" in s:
-                    case_list.append(
-                        s.replace("”", "")
-                        .replace("“", "")
-                        .replace('"', "")
-                        .replace("'", "")
-                        .replace("武器箱", "")
-                        .replace(" ", "")
-                    )
-            return case_list
+            return [
+                s.replace("”", "")
+                .replace("“", "")
+                .replace('"', "")
+                .replace("'", "")
+                .replace("武器箱", "")
+                .replace(" ", "")
+                for s in r[1].split(",")
+                if "武器箱" in s
+            ]
     else:
         logger.debug(f"访问皮肤所属武器箱异常 url: {url} code: {response.status_code}")
     return None
@@ -557,7 +553,7 @@ async def reset_count_daily():
             "[[_task|open_case_reset_remind]]今日开箱次数重置成功", log_cmd="开箱重置提醒"
         )
     except Exception as e:
-        logger.error(f"开箱重置错误", e=e)
+        logger.error("开箱重置错误", e=e)
 
 
 @driver.on_startup

@@ -34,15 +34,12 @@ def get_plugin_help(msg: str, is_super: bool = False) -> Optional[str]:
     ) or admin_manager.get_plugin_module(msg)
     if module and (plugin_data := plugin_data_manager.get(module)):
         plugin_data.superuser_usage
-        if is_super:
-            result = plugin_data.superuser_usage
-        else:
-            result = plugin_data.usage
+        result = plugin_data.superuser_usage if is_super else plugin_data.usage
         if result:
             width = 0
             for x in result.split("\n"):
                 _width = len(x) * 24
-                width = width if width > _width else _width
+                width = max(width, _width)
             height = len(result.split("\n")) * 45
             A = BuildImage(width, height, font_size=24)
             bk = BuildImage(

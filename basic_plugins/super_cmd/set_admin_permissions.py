@@ -58,10 +58,10 @@ async def _(
     try:
         if at_list:
             qq = at_list[0]
-            if cmd[:2] == "添加" and args and is_number(args[0]):
+            if cmd.startswith("添加") and args and is_number(args[0]):
                 level = int(args[0])
         else:
-            if cmd[:2] == "添加":
+            if cmd.startswith("添加"):
                 if (
                     len(args) > 2
                     and is_number(args[0])
@@ -71,12 +71,11 @@ async def _(
                     qq = int(args[0])
                     group_id = int(args[1])
                     level = int(args[2])
-            else:
-                if len(args) > 1 and is_number(args[0]) and is_number(args[1]):
-                    qq = int(args[0])
-                    group_id = int(args[1])
+            elif len(args) > 1 and is_number(args[0]) and is_number(args[1]):
+                qq = int(args[0])
+                group_id = int(args[1])
             flag = 1
-        level = -1 if cmd[:2] == "删除" else level
+        level = -1 if cmd.startswith("删除") else level
         if group_id == -1 or not level or not qq:
             raise IndexError()
     except IndexError:
@@ -84,17 +83,14 @@ async def _(
     if not qq:
         await super_cmd.finish("未指定对象...")
     try:
-        if cmd[:2] == "添加":
+        if cmd.startswith("添加"):
             await LevelUser.set_level(qq, group_id, level, 1)
             result = f"设置权限成功, 权限: {level}"
+        elif await LevelUser.delete_level(qq, group_id):
+            result = "删除管理成功!"
         else:
-            if await LevelUser.delete_level(qq, group_id):
-                result = "删除管理成功!"
-            else:
-                result = "该账号无管理权限!"
-        if flag == 2:
-            await super_cmd.send(result)
-        elif flag == 1:
+            result = "该账号无管理权限!"
+        if flag == 1:
             try:
                 await bot.send_group_msg(
                     group_id=group_id,
@@ -109,6 +105,8 @@ async def _(
             logger.info(
                 f"修改权限: {level if level != -1 else 0}", cmd, event.user_id, group_id, qq
             )
+        elif flag == 2:
+            await super_cmd.send(result)
     except Exception as e:
         await super_cmd.send("执行指令失败!")
-        logger.error(f"执行指令失败", cmd, event.user_id, group_id, qq, e=e)
+        logger.error("执行指令失败", cmd, event.user_id, group_id, qq, e=e)
